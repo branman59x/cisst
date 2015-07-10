@@ -72,8 +72,6 @@ void robLSPB::Set(const vctDoubleVec & start,
     mOvershotTime.Zeros();
     mOvershoot = false;
     mTotalTime.SetSize(mDimension);
-    //mDecelToMaxTime.SetSize(mDimension);
-    //mDecelToMax
     // compute trajectory parameters
     for (size_t i = 0;
          i < mDimension;
@@ -87,7 +85,7 @@ void robLSPB::Set(const vctDoubleVec & start,
             mVelocity[i] = 0.0;
             mAcceleration[i] = 0.0;
         }
-
+        std::cout<<"TEST! MV,MA "<<mVelocity[i]<<" "<<mAcceleration[i]<<"\n";
         // compute time if distance != 0
         if (distance != 0) {
             if (mVelocity[i] == 0.0) {
@@ -124,8 +122,6 @@ void robLSPB::Set(const vctDoubleVec & start,
                     mDecelerationTime[i] = mVelocity[i]/mAcceleration[i];
                     if(mAccelerationTime[i] <= 0)
                         mDecelerationTime[i] += fabs(mAccelerationTime[i]);
-
-                    std::cout<<"FIRST DECELERATION TIME "<<(mDecelerationTime[i])<<"\n";
                     mFinishTime[i] = mAccelerationTime[i] + mDecelerationTime[i];
                 }
                 std::cout<<"Setting Distances Triangle\n";
@@ -139,29 +135,27 @@ void robLSPB::Set(const vctDoubleVec & start,
                 mFinishTime[i] = (distance-mAccelerationDistance-mDecelerationDistance) / mVelocity[i] + mAccelerationTime[i] + mDecelerationTime[i];
             }
             mTotalTime[i] = mFinishTime[i];
-//            if(mVelocity[i] < mInitialVelocity[i])
-//            {
-//                double dif = mInitialVelocity[i] - mVelocity[i];
-//                double decelToMaxTime = fabs(dif/mAcceleration[i]);
-//                std::cout<<"Acceleration Time "<<mAccelerationTime[i]<<"\n";
-//                mTotalTime[i] = mTotalTime[i] + decelToMaxTime - mAccelerationTime[i];
-//                mFinishTime[i] = mFinishTime[i] + decelToMaxTime - mAccelerationTime[i];
-//                mAccelerationTime[i] = 0;
-//                std::cout<<decelToMaxTime<<" DTMT "<<mTotalTime<<" Total Time " <<mFinishTime[i]<< " FinishTime " <<"\n";
-//            }
-            if(mDecelerationDistance > distance)
+            if(fabs(mDecelerationDistance) > fabs(distance))
             {
+                mAcceleration[i] = fabs(mAcceleration[i]);
+                mDecelerationTime[i] = mInitialVelocity[i]/mAcceleration[i];
+                mDecelerationDistance = 0.5 * mAcceleration[i]
+                        * mDecelerationTime[i] * mDecelerationTime[i];
+
+                std::cout<<mDecelerationTime<<" "<<mDecelerationDistance<<" DT,DD\n";
                 std::cout<<"Overshot\n";
+
                 mOvershoot = true;
-                mSecondDistance[i] = abs(mFinish[i] - mDecelerationDistance) + mStart[i];
+                mSecondDistance[i] = fabs(mStart[i] + mDecelerationDistance) - mFinish[i];
                 std::cout<<mDecelerationDistance<<": Deceleration Distance\n";
+
                 double tempMaxVelocity = mVelocity[i];
                 mVelocity[i] = sqrt(fabs(mAcceleration[i]*mSecondDistance[i]));
-                if(mVelocity[i] > tempMaxVelocity)
+                if(fabs(mVelocity[i]) > fabs(tempMaxVelocity))
                 {
-                    mVelocity[i] = tempMaxVelocity;
+                    mVelocity[i] = fabs(tempMaxVelocity);
                 }
-                mSecondAccelTime[i] = mVelocity[i]/mAcceleration[i];
+                mSecondAccelTime[i] = fabs(mVelocity[i]/mAcceleration[i]);
                 std::cout<<mSecondAccelTime[i]<< " Second Accel Time\n";
                 std::cout<<"mVelocity "<<mVelocity[i]<<"\n";
                 mSecondAccelDistance[i] = 0.5*mAcceleration[i]*mSecondAccelTime[i]*mSecondAccelTime[i];
@@ -240,7 +234,7 @@ void robLSPB::Evaluate(const double absoluteTime,
         position[i] =
                 mStart[i] + mInitialVelocity[i]*dimTime + -0.5*fabs(mAcceleration[i])*time2;
         velocity[i] =
-                mInitialVelocity[i] + acceleration[i] * dimTime;
+                mInitialVelocity[i] - mAcceleration[i] * dimTime;
         acceleration[i] = -mAcceleration[i];
         std::cout<<velocity[i]<<":Velocity||Position: "<<position[i]<<"\n";
         std::cout<<dimTime<<":dimTime\n";
