@@ -25,7 +25,7 @@ http://www.cisst.org/cisst/license.txt.
 
 int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 {
-    const size_t dimension = 3;
+    const size_t dimension = 1;
     vctDoubleVec
         start,
         finish,
@@ -33,7 +33,8 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
         maxAcceleration,
         position,
         velocity,
-        acceleration;
+        acceleration,
+        initialVelocity;
 
     start.SetSize(dimension);
     finish.SetSize(dimension);
@@ -42,17 +43,26 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
     position.SetSize(dimension);
     velocity.SetSize(dimension);
     acceleration.SetSize(dimension);
+    initialVelocity.SetSize(dimension);
 
     // set parameters
+/*
     start.Assign(           0.0,   0.0,  -10.0);
     finish.Assign(         10.0, -20.0,   10.0);
     maxVelocity.Assign(     2.0,  20.0,  100.0);
     maxAcceleration.Assign( 1.0,  50.0,    5.0);
+    */
+    start[0] = 1.0;
+    finish[0] = 4.0;
+    maxVelocity[0] = 10.0;
+    maxAcceleration[0] = 1.0;
+    initialVelocity[0] = 4;
+
     const double startTime = 2.0;
 
     robLSPB trajectory;
     trajectory.Set(start, finish,
-                   maxVelocity, maxAcceleration,
+                   maxVelocity, maxAcceleration,initialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
     const double duration = trajectory.Duration();
@@ -68,7 +78,6 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
     const char * logHeaderName = "robLSPB-header.txt";
     log.open(logName);
     logHeader.open(logHeaderName);
-
     // header for logs
     logHeader << cmnData<double>::SerializeDescription(duration, ',', "time")
               << ','

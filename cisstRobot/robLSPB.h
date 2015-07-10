@@ -68,9 +68,19 @@ class CISST_EXPORT robLSPB {
         mVelocity,
         mAcceleration,
         mAccelerationTime,
+        mDecelerationTime,
         mFinishTime,
         mTimeScale,
-        mTemp;
+        mTemp,
+        mInitialVelocity,
+        mSecondDistance,
+        mSecondAccelTime,
+        mSecondAccelDistance,
+        mOvershotTime,
+        mTotalTime;
+    bool mOvershoot;
+    double mAccelerationDistance;
+    double mDecelerationDistance;
 
  public:
     robLSPB(void);
@@ -78,6 +88,7 @@ class CISST_EXPORT robLSPB {
             const vctDoubleVec & finish,
             const vctDoubleVec & velocity,
             const vctDoubleVec & acceleration,
+            const vctDoubleVec & initialVelocity,
             const double startTime = 0.0,
             const CoordinationType coordination = LSPB_NONE);
 
@@ -97,6 +108,7 @@ class CISST_EXPORT robLSPB {
              const vctDoubleVec & finish,
              const vctDoubleVec & velocity,
              const vctDoubleVec & acceleration,
+             const vctDoubleVec & initialVelocity,
              const double startTime = 0.0,
              const CoordinationType coordination = LSPB_NONE);
 
