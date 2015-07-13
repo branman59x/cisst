@@ -77,10 +77,10 @@ class CISST_EXPORT robLSPB {
         mSecondAccelTime,
         mSecondAccelDistance,
         mOvershotTime,
-        mTotalTime;
-    double mAccelerationDistance;
-    double mDecelerationDistance;
-    bool mOvershoot;
+        mTotalTime,
+        mAccelerationDistance,
+        mDecelerationDistance;
+    vctBoolVec mOvershoot;
 
  public:
     robLSPB(void);

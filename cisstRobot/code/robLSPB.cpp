@@ -70,8 +70,15 @@ void robLSPB::Set(const vctDoubleVec & start,
     mSecondDistance.SetSize(mDimension);//Total distance of a trajectory after an overshoot
     mOvershotTime.SetSize(mDimension);//Time of Overshoot
     mOvershotTime.Zeros();
-    mOvershoot = false;//Overshot Test
+    mAccelerationDistance.SetSize(mDimension);
+    mDecelerationDistance.SetSize(mDimension);
+    mAccelerationDistance.Zeros();
+    mDecelerationDistance.Zeros();
+    //mOvershoot = false;//Overshot Test
     mTotalTime.SetSize(mDimension);//Time that includes overshot for time scale
+    mOvershoot.SetSize(mDimension);
+    mOvershoot.Zeros();
+    //bool mOvershoot [mDimension];
     // compute trajectory parameters
     for (size_t i = 0;
          i < mDimension;
@@ -95,13 +102,13 @@ void robLSPB::Set(const vctDoubleVec & start,
             }
             mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/mAcceleration[i];
             mDecelerationTime[i] = mVelocity[i] / mAcceleration[i];
-            mAccelerationDistance = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
+            mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
                     * mAccelerationTime[i] * mAccelerationTime[i];
-            mDecelerationDistance = 0.5 * mAcceleration[i]
+            mDecelerationDistance[i] = 0.5 * mAcceleration[i]
                     * mDecelerationTime[i] * mDecelerationTime[i];
             // check distance over max accel and max decel at end of
             // acceleration phase to see if we're past mid-point.
-            if (fabs(mAccelerationDistance + mDecelerationDistance) >= fabs(distance)) {
+            if (fabs(mAccelerationDistance[i] + mDecelerationDistance[i]) >= fabs(distance)) {
                 //calculates the times with an initial velocity of 0
                 if(mInitialVelocity[i]==0){
                     mFinishTime[i] = 2 * sqrt(distance / mAcceleration[i]);
@@ -125,27 +132,28 @@ void robLSPB::Set(const vctDoubleVec & start,
                 }
                 //calculates the distances for a movement that does not reach a constant velocity
                 //and has an initial velocity that does not equal 0
-                mAccelerationDistance = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
+                mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
                         * mAccelerationTime[i] * mAccelerationTime[i];
-                mDecelerationDistance = 0.5 * mAcceleration[i]
+                mDecelerationDistance[i] = 0.5 * mAcceleration[i]
                         * mDecelerationTime[i] * mDecelerationTime[i];
             } else {
                 //calculates the finish time for a movement that reaches a constant velocity
                 std::cout<<"Constant V\n";
-                mFinishTime[i] = (distance-mAccelerationDistance-mDecelerationDistance) / mVelocity[i] + mAccelerationTime[i] + mDecelerationTime[i];
+                mFinishTime[i] = (distance-mAccelerationDistance[i]-mDecelerationDistance[i]) / mVelocity[i] + mAccelerationTime[i] + mDecelerationTime[i];
             }
             mTotalTime[i] = mFinishTime[i];
             //checks for overshoot
-            if(fabs(mDecelerationDistance) > fabs(distance))
+            if(fabs(mDecelerationDistance[i]) > fabs(distance))
             {
-                mOvershoot = true;
+                std::cout<<"joint "<<i<<"\n";
+                mOvershoot[i] = true;
                 //prepares variables for an immediate deceleration
                 mAcceleration[i] = fabs(mAcceleration[i]);
                 mDecelerationTime[i] = mInitialVelocity[i]/mAcceleration[i];
-                mDecelerationDistance = 0.5 * mAcceleration[i]
+                mDecelerationDistance[i] = 0.5 * mAcceleration[i]
                         * mDecelerationTime[i] * mDecelerationTime[i];
                 //calculates variables for a new trajectory after deceleration
-                mSecondDistance[i] = fabs(mStart[i] + mDecelerationDistance) - mFinish[i];
+                mSecondDistance[i] = fabs(mStart[i] + mDecelerationDistance[i]) - mFinish[i];
                 double tempMaxVelocity = mVelocity[i];
                 mVelocity[i] = sqrt(fabs(mAcceleration[i]*mSecondDistance[i]));
                 if(fabs(mVelocity[i]) > fabs(tempMaxVelocity))
@@ -158,12 +166,15 @@ void robLSPB::Set(const vctDoubleVec & start,
                         (fabs(mSecondDistance[i])-mSecondAccelDistance[i]*2)/mVelocity[i];
                 mTotalTime[i] = mFinishTime[i] + mDecelerationTime[i];
             }
+            else
+                mOvershoot[i] = false;
         } else{
             mAccelerationTime[i] = 0.0;
             mDecelerationTime[i] = 0.0;
             mFinishTime[i] = 0.0;
         }
     }
+    std::cout<<mOvershoot[0]<<" "<<mOvershoot[1]<<" "<<mOvershoot[2]<<"\n";
     // compute max time
     mDuration = mTotalTime.MaxElement();
     // scale time to all arrive at same time
@@ -196,12 +207,12 @@ void robLSPB::Evaluate(const double absoluteTime,
     if (acceleration.size() != mDimension) {
         cmnThrow("robLSPB::Evaluate: acceleration doesn't match dimension");
     }
-
-    if(mOvershoot)
-    {
-        for (size_t i = 0;
-             i < mDimension;
-             ++i) {
+    for (size_t i = 0;
+         i < mDimension;
+         ++i) {
+        if(mOvershoot[i])
+        {
+            std::cout<<mOvershoot[0]<<" "<<mOvershoot[1]<<" "<<mOvershoot[2]<<"\n";
             const double time = absoluteTime - mStartTime;
             double dimTime;
             if (mCoordination == LSPB_DURATION) {
@@ -209,11 +220,13 @@ void robLSPB::Evaluate(const double absoluteTime,
             } else {
                 dimTime = time;
             }
+            std::cout<<"OVERSHOOT decelTime: "<<i<<","<<mDecelerationTime[i]<<"\n";
+            std::cout<<"dimTime: "<<dimTime<<"\n";
             const double time2 = dimTime * dimTime;
             if (time <= 0) {
                 position.ForceAssign(mStart);
                 velocity.Zeros();
-                velocity = mInitialVelocity;
+                velocity.ForceAssign(mInitialVelocity);
                 acceleration.Zeros();
                 return;
             }
@@ -226,11 +239,12 @@ void robLSPB::Evaluate(const double absoluteTime,
         //checks if deceleration has finished
         if(dimTime >= mDecelerationTime[i])
         {
-            mOvershoot = false;
+            std::cout<<"dimTime > decelTime: " << mDecelerationTime[i] << "\n";
+            mOvershoot[i] = false;
             //sets variables for the trajectory to get to the finish point
-            mStart[i] += mDecelerationDistance;
-            mDecelerationDistance = mSecondAccelDistance[i];
-            mAccelerationDistance = mSecondAccelDistance[i];
+            mStart[i] += mDecelerationDistance[i];
+            mDecelerationDistance[i] = mSecondAccelDistance[i];
+            mAccelerationDistance[i] = mSecondAccelDistance[i];
             mAccelerationTime[i] = mSecondAccelTime[i];
             mOvershotTime[i] = mDecelerationTime[i];
             mDecelerationTime[i] = mSecondAccelTime[i];
@@ -238,22 +252,22 @@ void robLSPB::Evaluate(const double absoluteTime,
             mVelocity[i] *= -1;
             mAcceleration[i] *= -1;
         }
-      }
+
     }
-    else
+    if(!mOvershoot[i])
     {
         const double time = absoluteTime - mStartTime;
         if (time <= 0) {
             position.ForceAssign(mStart);
             velocity.Zeros();
-            velocity = mInitialVelocity;
+            velocity.ForceAssign(mInitialVelocity);
             acceleration.Zeros();
             return;
         }
 
-        for (size_t i = 0;
-             i < mDimension;
-             ++i) {
+//        for (size_t i = 0;
+//             i < mDimension;
+//             ++i) {
             double conditionTime;
             if (mCoordination == LSPB_DURATION) {
                 conditionTime = time*mTimeScale[i] - mOvershotTime[i];
