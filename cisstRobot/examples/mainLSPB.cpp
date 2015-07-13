@@ -25,7 +25,7 @@ http://www.cisst.org/cisst/license.txt.
 
 int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 {
-    const size_t dimension = 1;
+    const size_t dimension = 3;
     vctDoubleVec
         start,
         finish,
@@ -46,18 +46,18 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 
     // set parameters
 
-//    start.Assign(          5.0, 2.0, 1.0 );
-//    finish.Assign(         6.0, 1.0, 10.0);
-//    maxVelocity.Assign(    5.0, 0.5, 7.0 );
-//    maxAcceleration.Assign(2.0, 2.0, 3.0 );
-//    initialVelocity.Assign(4.0, 5.0, 0.0 );
+    start.Assign(          5.0  , 2.0   , 1.0 );
+    finish.Assign(         6.0  , 1.0   , -30.0);
+    maxVelocity.Assign(    5.0  , 0.5   , 100.0 );
+    maxAcceleration.Assign(2.0  , 2.0   , 50.0 );
+    initialVelocity.Assign(4.0  , 5.0   , -29.0 );
     std::cout<<"I DID IT\n";
 
-        start[0] = 2;
-        finish[0] = 1;
-        maxVelocity[0] = .5;
-        maxAcceleration[0] = 2.0;
-        initialVelocity[0] = 5;
+//        start[0] = 2;
+//        finish[0] = 1;
+//        maxVelocity[0] = 0.5;
+//        maxAcceleration[0] = 2;
+//        initialVelocity[0] = 5;
 
     const double startTime = 2.0;
 
