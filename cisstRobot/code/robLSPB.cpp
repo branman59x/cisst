@@ -149,13 +149,13 @@ void robLSPB::Set(const vctDoubleVec & start,
             mTotalTime[i] = mFinishTime[i];
             //checks for overshoot
             std::cout<<mDecelerationDistance[i]<<":decelDistance "<< distance << " distance "<<mDecelerationTime[i]<<":decelTIME "<< mAccelerationTime[i]<<":acelTime\n";
-            if(fabs(mDecelerationDistance[i]) > fabs(distance))
+            if(fabs(mDecelerationDistance[i]) > fabs(distance) || mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance))
             {
                 std::cout<<"joint "<<i<<"\n";
                 mOvershoot[i] = true;
                 //prepares variables for an immediate deceleration
                 mAcceleration[i] = fabs(mAcceleration[i]);
-                mDecelerationTime[i] = mInitialVelocity[i]/mAcceleration[i];
+                mDecelerationTime[i] = fabs(mInitialVelocity[i])/mAcceleration[i];
                 mDecelerationDistance[i] = 0.5 * mAcceleration[i]
                         * mDecelerationTime[i] * mDecelerationTime[i];
                 //calculates variables for a new trajectory after deceleration
@@ -303,7 +303,7 @@ void robLSPB::Evaluate(const double absoluteTime,
                     {
                         std::cout<<"decel\n";
                         position[i] =
-                                mStart[i] + mInitialVelocity[i]*conditionTime + -0.5*fabs(mAcceleration[i])*conditionTime*conditionTime;
+                                mStart[i] + mInitialVelocity[i]*conditionTime - 0.5*fabs(mAcceleration[i])*conditionTime*conditionTime;
                         velocity[i] =
                                 mInitialVelocity[i] + acceleration[i] * conditionTime;
                     }
@@ -323,8 +323,12 @@ void robLSPB::Evaluate(const double absoluteTime,
                 } else {
                     std::cout<<"Constant|ConditionTime "<<conditionTime<<" |Velocity "<<velocity[i]<<" |Position "<<position[i]<<" |Acceleration "<<mAcceleration[i]<<"\n";
                     // constant velocity phase
-                    position[i] = 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
-                            + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(conditionTime - fabs(mAccelerationTime[i]));
+                    if(mAcceleration[i] > 0 && mInitialVelocity[i] > mVelocity[i])
+                        position[i] = -0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
+                                + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(conditionTime - fabs(mAccelerationTime[i]));
+                    else
+                        position[i] = 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
+                                + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(conditionTime - fabs(mAccelerationTime[i]));
                     velocity[i] = mVelocity[i];
                     acceleration[i] = 0.0;
                 }

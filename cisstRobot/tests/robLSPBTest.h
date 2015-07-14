@@ -27,6 +27,7 @@ class robLSPBTest : public CppUnit::TestFixture
     CPPUNIT_TEST_SUITE(robLSPBTest);
     {
         CPPUNIT_TEST(Test1);
+        CPPUNIT_TEST(Test2);
     }
     CPPUNIT_TEST_SUITE_END();
     
@@ -38,6 +39,7 @@ class robLSPBTest : public CppUnit::TestFixture
     }
     
     void Test1(void);
+    void Test2(void);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(robLSPBTest);
