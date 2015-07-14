@@ -133,6 +133,7 @@ void robLSPB::Set(const vctDoubleVec & start,
                 //and has an initial velocity that does not equal 0
                 mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
                         * mAccelerationTime[i] * mAccelerationTime[i];
+                std::cout<<"IM DOIN THIS ONE...AccelDistance "<<mAccelerationDistance[i]<<"\n";
                 mDecelerationDistance[i] = 0.5 * mAcceleration[i]
                         * mDecelerationTime[i] * mDecelerationTime[i];
             } else {
