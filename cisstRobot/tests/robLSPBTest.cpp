@@ -3,9 +3,9 @@
 
 /*
   Author(s):  Anton Deguet
-  Created on: 2014-10-27
-
-  (C) Copyright 2014 Johns Hopkins University (JHU), All Rights Reserved.
+  Created on: 2015-07-14
+  
+  (C) Copyright 2015 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 
@@ -14,17 +14,13 @@ no warranty.  The complete license can be found in license.txt and
 http://www.cisst.org/cisst/license.txt.
 
 --- end cisst license ---
-
 */
 
-#include <iostream>
-#include <fstream>
-#include <cisstCommon/cmnConstants.h>
-#include <cisstVector/vctDynamicVectorTypes.h>
-#include <cisstRobot/robLSPB.h>
 
-int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
-{
+#include "robLSPBTest.h"
+
+
+void robLSPBTest::Test1(void) {
     const size_t dimension = 1;
     vctDoubleVec
         start,
@@ -44,20 +40,11 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
     acceleration.SetSize(dimension);
     initialVelocity.SetSize(dimension);
 
-    // set parameters
-
-//    start.Assign(          5.0  , 2.0   , 1.0 );
-//    finish.Assign(         6.0  , 1.0   , -30.0);
-//    maxVelocity.Assign(    5.0  , 0.5   , 10.0 );
-//    maxAcceleration.Assign(2.0  , 2.0   , 50.0 );
-//    initialVelocity.Assign(4.0  , 5.0   , -29.0 );
-    std::cout<<"I DID IT\n";
-
-        start[0] = 1;
-        finish[0] = 30;
-        maxVelocity[0] = 10;
-        maxAcceleration[0] = 50;
-        initialVelocity[0] = 29;
+    start[0] = 1.0;
+    finish[0] = 30.0;
+    maxVelocity[0] = 10.0;
+    maxAcceleration[0] = 50.0;
+    initialVelocity[0] = 0.0;
 
     const double startTime = 2.0;
 
@@ -75,8 +62,8 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
     std::cout << "duration: " << duration << std::endl;
 
     std::ofstream log, logHeader;
-    const char * logName = "robLSPB.txt";
-    const char * logHeaderName = "robLSPB-header.txt";
+    const char * logName = "robLSPBTest1.txt";
+    const char * logHeaderName = "robLSPBTest1-header.txt";
     log.open(logName);
     logHeader.open(logHeaderName);
     // header for logs
@@ -89,10 +76,41 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
               << cmnData<vctDoubleVec>::SerializeDescription(acceleration, ',', "acceleration")
               << std::endl;
 
+    vctDoubleVec previousPosition(start);
+    vctDoubleVec previousVelocity(initialVelocity);
+    double previousTime = startTime - extraPlotTime - step;
+
     for (size_t i = 0; i < nbSteps; ++i) {
         double now = (startTime - extraPlotTime) + i * step;
         trajectory.Evaluate(now , position, velocity, acceleration);
-        // csv file
+
+        // tests
+        CPPUNIT_ASSERT(velocity.LesserOrEqual(maxVelocity));
+        CPPUNIT_ASSERT(velocity.GreaterOrEqual(-maxVelocity));
+        CPPUNIT_ASSERT(acceleration.LesserOrEqual(maxAcceleration));
+        CPPUNIT_ASSERT(acceleration.GreaterOrEqual(-maxAcceleration));
+
+        // compare previous and current to find derivatives
+        double deltaTime = now - previousTime;
+
+        vctDoubleVec deltaPosition(dimension);
+        deltaPosition.DifferenceOf(position, previousPosition);
+        deltaPosition.Divide(deltaTime);
+        std::cerr << deltaPosition[0] - 10.0 << std::endl;
+        CPPUNIT_ASSERT(deltaPosition.LesserOrEqual(maxVelocity * 1.001));
+        CPPUNIT_ASSERT(deltaPosition.GreaterOrEqual(-maxVelocity * 1.001));
+
+        vctDoubleVec deltaVelocity(dimension);
+        deltaPosition.DifferenceOf(velocity, previousVelocity);
+        deltaPosition.Divide(deltaTime);
+        CPPUNIT_ASSERT(deltaVelocity.LesserOrEqual(maxAcceleration * 1.001));
+        CPPUNIT_ASSERT(deltaVelocity.GreaterOrEqual(-maxAcceleration * 1.001));
+
+        previousTime = now;
+        previousPosition.Assign(position);
+        previousVelocity.Assign(velocity);
+
+        // log to csv file
         cmnData<double>::SerializeText(now, log);
         log << ',';
         cmnData<vctDoubleVec>::SerializeText(position, log);
@@ -105,8 +123,4 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 
     log.close();
     logHeader.close();
-
-    std::cout << "trajectory saved in " << logName << " (format description: " << logHeaderName << ")" << std::endl;
-
-    return 0;
 }

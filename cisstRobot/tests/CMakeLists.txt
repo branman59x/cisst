@@ -1,7 +1,5 @@
 #
-#
-# (C) Copyright 2003-2013 Johns Hopkins University (JHU), All Rights
-# Reserved.
+# (C) Copyright 2003-2015 Johns Hopkins University (JHU), All Rights Reserved.
 #
 # --- begin cisst license - do not edit ---
 #
@@ -22,6 +20,7 @@ if( CISST_cisstNumerical AND CISST_HAS_CISSTNETLIB )
        robManipulatorTest.cpp
   #     robMassTest.cpp
        robRobotsKinematics.cpp
+       robLSPBTest.cpp
        )
 
   # all header files
@@ -30,6 +29,7 @@ if( CISST_cisstNumerical AND CISST_HAS_CISSTNETLIB )
        robManipulatorTest.h
   #     robMassTest.h
        robRobotsKinematics.h
+       robLSPBTest.h
        )
 
   # Add executable for C++ tests
