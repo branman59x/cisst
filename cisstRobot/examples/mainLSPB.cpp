@@ -53,8 +53,8 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 //    initialVelocity.Assign(-5.0  , 5.0, 5.0);
     std::cout<<"I DID IT\n";
 
-    start[0] = 3;
-    finish[0] = 4;//30
+    start[0] = -3;
+    finish[0] = -2;
     maxVelocity[0] = 10;
     maxAcceleration[0] = 2;
     initialVelocity[0] = -5;

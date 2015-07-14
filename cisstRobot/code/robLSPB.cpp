@@ -163,7 +163,7 @@ void robLSPB::Set(const vctDoubleVec & start,
                         * mDecelerationTime[i] * mDecelerationTime[i];
                 std::cout<<mDecelerationDistance[i]<<":decelDistance\n";
                 //calculates variables for a new trajectory after deceleration
-                mSecondDistance[i] = fabs(mStart[i] + fabs(mDecelerationDistance[i])) - mFinish[i];
+                mSecondDistance[i] = mFinish[i] - (mStart[i] + mDecelerationDistance[i]);
                 double tempMaxVelocity = mVelocity[i];
                 mVelocity[i] = sqrt(fabs(mAcceleration[i]*mSecondDistance[i]));
                 if(fabs(mVelocity[i]) > fabs(tempMaxVelocity))
