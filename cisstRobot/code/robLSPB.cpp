@@ -86,7 +86,7 @@ void robLSPB::Set(const vctDoubleVec & start,
         if (distance < 0.0) {
            //mVelocity[i] *= -1.0;;
            //mAcceleration[i] *= -1.0;
-            if(mInitialVelocity[i] > 0)
+            if(mInitialVelocity != 0)
             {
                 mInitialVelocity[i] *= -1;
                 distance *= -1;
@@ -201,8 +201,10 @@ void robLSPB::Set(const vctDoubleVec & start,
             double temp = mStart[i];
             mStart[i] = mFinish[i];
             mFinish[i] = temp;
-            mInitialVelocity[i] *= -1;
             mAcceleration[i] *= -1;
+            if(mInitialVelocity[i] > 0 && mFinish[i]-mStart[i] < 0)
+                mVelocity[i] *= -1;
+            mInitialVelocity[i] *= -1;
         }
     }
     std::cout<<mOvershoot[0]<<" "<<mOvershoot[1]<<" "<<mOvershoot[2]<<"\n";
