@@ -45,19 +45,19 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
     initialVelocity.SetSize(dimension);
 
     // set parameters
+    //0 vel,  non0 vel, overshoot reg, max less than init, opposite direction, opposite direction and max less than init
+//    start.Assign(          0.0, 2.0, 3.0);
+//    finish.Assign(        10.0,12.0, 15.0);
+//    maxVelocity.Assign(    4.0, 2.0, 5.0);
+//    maxAcceleration.Assign(1.0, 1.0, 2.0);
+//    initialVelocity.Assign(5.0, -1.0, -6.0);
+    std::cout<<"I DID IT\n";
 
-//    start.Assign(          0.00, 2.0, -15);
-//    finish.Assign(         10.0,12.0, -30);
-//    maxVelocity.Assign(    5.00, 2.0, 5);
-//    maxAcceleration.Assign(2.00, 1.0, 3.0);
-//    initialVelocity.Assign(10.0,-6.0, 0.0);
-//    std::cout<<"I DID IT\n";
-
-    start[0] = -15;
-    finish[0] = -30;
+    start[0] = 3;
+    finish[0] = 15;
     maxVelocity[0] = 5;
-    maxAcceleration[0] = 3;
-    initialVelocity[0] = 0;
+    maxAcceleration[0] = 2;
+    initialVelocity[0] = -6;
 
     const double startTime = 2.0;
 

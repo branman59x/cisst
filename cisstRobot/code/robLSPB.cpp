@@ -97,6 +97,8 @@ void robLSPB::Set(const vctDoubleVec & start,
                 cmnThrow("robLSPB::Set: acceleration must be greater than zero");
             }
             mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/mAcceleration[i];
+            std::cout<<mAccelerationTime<<"\n";
+
             mDecelerationTime[i] = mVelocity[i] / mAcceleration[i];
             mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
                     * mAccelerationTime[i] * mAccelerationTime[i];
@@ -104,7 +106,7 @@ void robLSPB::Set(const vctDoubleVec & start,
                     * mDecelerationTime[i] * mDecelerationTime[i];
             // check distance over max accel and max decel at end of
             // acceleration phase to see if we're past mid-point.
-            if (fabs(mAccelerationDistance[i] + mDecelerationDistance[i]) >= fabs(distance)) {
+            if ((mAccelerationDistance[i] + mDecelerationDistance[i]) >= distance) {
                 //calculates the times with an initial velocity of 0
                 if(mInitialVelocity[i]==0){
                     mFinishTime[i] = 2 * sqrt(distance / mAcceleration[i]);
@@ -118,15 +120,15 @@ void robLSPB::Set(const vctDoubleVec & start,
                     //calculates the max velocity that the velocity will hit (may be lower than predetermined)
                     mVelocity[i] = sqrt((2*mAcceleration[i]*distance + mInitialVelocity[i]*mInitialVelocity[i])/2);
                     std::cout<<mVelocity[i]<<"|mV\n";
-                    if(fabs(mVelocity[i]) > fabs(tempMaxVelocity))
+                    if(mVelocity[i] > tempMaxVelocity)
                     {
                         mVelocity[i] = tempMaxVelocity;
                     }
-                    mAccelerationTime[i] = (mVelocity[i]-fabs(mInitialVelocity[i]))/fabs(mAcceleration[i]);
+                    mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/(mAcceleration[i]);
                     std::cout<<mVelocity[i]<<" : mVelocity "<<mAccelerationTime[i]<<" AccelTime\n";
-                    mDecelerationTime[i] = mVelocity[i]/fabs(mAcceleration[i]);
+                    mDecelerationTime[i] = mVelocity[i]/mAcceleration[i];
                     if(mAccelerationTime[i] <= 0)
-                        mDecelerationTime[i] += fabs(mAccelerationTime[i]);
+                        mDecelerationTime[i] += mAccelerationTime[i];
                     mFinishTime[i] = mAccelerationTime[i] + mDecelerationTime[i];
                 }
                 //calculates the distances for a movement that does not reach a constant velocity
@@ -140,24 +142,22 @@ void robLSPB::Set(const vctDoubleVec & start,
                 //calculates the finish time for a movement that reaches a constant velocity
                 std::cout<<"Constant V\n";
                 //if(mAccelerationTime[i] <= 0)
-                //    mDecelerationTime[i] += fabs(mAccelerationTime[i]);
+                //    mDecelerationTime[i] += (mAccelerationTime[i]);
                 std::cout<<"AccelDistance "<<mAccelerationDistance[i]<<"\n";
                 std::cout<<"Constant Distance "<<distance - fabs(mAccelerationDistance[i]) - mDecelerationDistance[i]<<"\n";
-                mFinishTime[i] = (distance-fabs(mAccelerationDistance[i])-fabs(mDecelerationDistance[i])) / mVelocity[i] + fabs(mAccelerationTime[i]) +fabs(mDecelerationTime[i]);
+                mFinishTime[i] = (distance-fabs(mAccelerationDistance[i])-mDecelerationDistance[i]) / mVelocity[i] + fabs(mAccelerationTime[i]) + mDecelerationTime[i];
                 std::cout<<mFinishTime[i]<< " FinishTime\n";
             }
             mTotalTime[i] = mFinishTime[i];
             //checks for overshoot
             std::cout<<mDecelerationDistance[i]<<":decelDistance "<< distance << " distance "<<mDecelerationTime[i]<<":decelTIME "<< mAccelerationTime[i]<<":acelTime\n";
-            if(fabs(mDecelerationDistance[i]) > fabs(distance) || (mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
+            if(mDecelerationDistance[i] > (distance) || (mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
             {
                 std::cout<<"joint "<<i<<"\n";
                 mOvershoot[i] = true;
                 //prepares variables for an immediate deceleration
-                if(mInitialVelocity[i] <= 0)
-                    mAcceleration = -fabs(mAcceleration[i]);
-                else
-                    mAcceleration[i] = fabs(mAcceleration[i]);
+                if((mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
+                    mAcceleration = -mAcceleration;
                 mDecelerationTime[i] = fabs(mInitialVelocity[i])/fabs(mAcceleration[i]);
                 mDecelerationDistance[i] = 0.5 * mAcceleration[i]
                         * mDecelerationTime[i] * mDecelerationTime[i];
@@ -166,15 +166,15 @@ void robLSPB::Set(const vctDoubleVec & start,
                 mSecondDistance[i] = mFinish[i] - (mStart[i] + mDecelerationDistance[i]);
                 double tempMaxVelocity = mVelocity[i];
                 mVelocity[i] = sqrt(fabs(mAcceleration[i]*mSecondDistance[i]));
-                if(fabs(mVelocity[i]) > fabs(tempMaxVelocity))
+                if(mVelocity[i] > tempMaxVelocity)
                 {
-                    mVelocity[i] = fabs(tempMaxVelocity);
+                    mVelocity[i] = (tempMaxVelocity);
                 }
                 std::cout<<"MV OVERSHOOT: "<<mVelocity[i]<<" TMV OVERSHOOT: "<<tempMaxVelocity<<"\n";
-                mSecondAccelTime[i] = fabs(mVelocity[i]/mAcceleration[i]);
-                mSecondAccelDistance[i] = 0.5*fabs(mAcceleration[i])*mSecondAccelTime[i]*mSecondAccelTime[i];
+                mSecondAccelTime[i] = mVelocity[i]/fabs(mAcceleration[i]);
+                mSecondAccelDistance[i] = 0.5*mAcceleration[i]*mSecondAccelTime[i]*mSecondAccelTime[i];
                 mFinishTime[i] = mSecondAccelTime[i]*2 +
-                        (fabs(mSecondDistance[i])-fabs(mSecondAccelDistance[i])*2)/mVelocity[i];
+                        (fabs(mSecondDistance[i])-fabs(mSecondAccelDistance[i]*2))/mVelocity[i];
                 mTotalTime[i] = mFinishTime[i] + mDecelerationTime[i];
                 std::cout<<mSecondAccelTime<<" 2ndAT "<<mSecondAccelDistance<<" 2ndAD "<<mSecondDistance<<" 2ndD\n";
             }
@@ -261,12 +261,11 @@ void robLSPB::Evaluate(const double absoluteTime,
                 mAccelerationTime[i] = mSecondAccelTime[i];
                 mOvershotTime[i] = mDecelerationTime[i];
                 mDecelerationTime[i] = mSecondAccelTime[i];
-                mInitialVelocity[i] = velocity[i];
-                std::cout<<mAcceleration[i];
                 mAcceleration[i] *= -1;
-                std::cout<<mAcceleration[i];
-                if(mAcceleration[i] < 0)
+                std::cout<<mInitialVelocity[i]<<" mInitVelocity\n";
+                if(mInitialVelocity[i] >= 0)
                     mVelocity[i]*=-1;
+                mInitialVelocity[i] = velocity[i];
                 std::cout<<"AT|"<<mAccelerationTime[i]<<" |DT| "<<mDecelerationTime[i]<<"\n";
             }
 
@@ -282,9 +281,6 @@ void robLSPB::Evaluate(const double absoluteTime,
                 return;
             }
 
-            //        for (size_t i = 0;
-            //             i < mDimension;
-            //             ++i) {
             double conditionTime;
             if (mCoordination == LSPB_DURATION) {
                 conditionTime = time*mTimeScale[i] - mOvershotTime[i];
@@ -303,16 +299,16 @@ void robLSPB::Evaluate(const double absoluteTime,
                             mStart[i]
                             + 0.5*mAcceleration[i] * conditionTime*conditionTime + mInitialVelocity[i]*conditionTime;
                     velocity[i] = mAcceleration[i] * conditionTime + mInitialVelocity[i];
-                    acceleration[i] = fabs(mAcceleration[i]);
+                    acceleration[i] = mAcceleration[i];
                 } else if (conditionTime >= (mFinishTime[i] - mDecelerationTime[i])|| -conditionTime > mAccelerationTime[i]) {
                     // deceleration phase
                     std::cout<<"Decelerating|ConditionTime "<<conditionTime<<" |Velocity "<<velocity[i]<<" |Position "<<position[i]<<" |Acceleration "<<mAcceleration[i]<<"\n";
                     // deceleration when the max velocity is lower than the initial velocity
                     if(-conditionTime > mAccelerationTime[i])
                     {
-                        std::cout<<"decel\n";
+                        std::cout<<mStart[i]<<" startPos for decel\n";
                         position[i] =
-                                mStart[i] + mInitialVelocity[i]*conditionTime - 0.5*fabs(mAcceleration[i])*conditionTime*conditionTime;
+                                mStart[i] + mInitialVelocity[i]*conditionTime - 0.5*mAcceleration[i]*conditionTime*conditionTime;
                         velocity[i] =
                                 mInitialVelocity[i] - mAcceleration[i] * conditionTime;
                     }
@@ -328,19 +324,20 @@ void robLSPB::Evaluate(const double absoluteTime,
                                 mAcceleration[i] * mFinishTime[i]
                                 - mAcceleration[i] * conditionTime;
                     }
-                    acceleration[i] = -fabs(mAcceleration[i]);
+                    acceleration[i] = -mAcceleration[i];
                 } else {
                     std::cout<<"Constant|ConditionTime "<<conditionTime<<" |Velocity "<<velocity[i]<<" |Position "<<position[i]<<" |Acceleration "<<mAcceleration[i]<<"\n";
                     // constant velocity phase
-                    //if(mAcceleration[i] > 0 && mInitialVelocity[i] > mVelocity[i])
-                    //{
-                    //    std::cout<<"HERe\n";
-                    //    position[i] = -0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
-                    //            + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(conditionTime - fabs(mAccelerationTime[i]));
-                    //}
-                    //else
+                    std::cout<< 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
+                                + mInitialVelocity[i]*mAccelerationTime[i]<<"\n";
+                    //FIGURE OUT A BETTER WAY TO DO THIS
+                    if(mAcceleration[i] > 0 && fabs(mInitialVelocity[i]) > mVelocity[i] && mInitialVelocity[i] > 0)
+                        position[i] = -0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
+                                + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(conditionTime - fabs(mAccelerationTime[i]));
+                    else
                         position[i] = 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
                                 + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(conditionTime - fabs(mAccelerationTime[i]));
+
                         velocity[i] = mVelocity[i];
                         acceleration[i] = 0.0;
                 }

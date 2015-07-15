@@ -40,11 +40,11 @@ void robLSPBTest::Test1(void) {
     acceleration.SetSize(dimension);
     initialVelocity.SetSize(dimension);
 
-    start[0] = 1.0;
-    finish[0] = 30.0;
+    start[0] = 0.0;
+    finish[0] = 10.0;
     maxVelocity[0] = 10.0;
-    maxAcceleration[0] = 50.0;
-    initialVelocity[0] = 0.0;
+    maxAcceleration[0] = 2.0;
+    initialVelocity[0] = 5.0;
 
     const double startTime = 2.0;
 
