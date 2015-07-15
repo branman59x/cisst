@@ -97,7 +97,6 @@ void robLSPB::Set(const vctDoubleVec & start,
                 cmnThrow("robLSPB::Set: acceleration must be greater than zero");
             }
             mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/mAcceleration[i];
-            std::cout<<mAccelerationTime<<"\n";
 
             mDecelerationTime[i] = mVelocity[i] / mAcceleration[i];
             mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
@@ -151,13 +150,15 @@ void robLSPB::Set(const vctDoubleVec & start,
             mTotalTime[i] = mFinishTime[i];
             //checks for overshoot
             std::cout<<mDecelerationDistance[i]<<":decelDistance "<< distance << " distance "<<mDecelerationTime[i]<<":decelTIME "<< mAccelerationTime[i]<<":acelTime\n";
-            if(mDecelerationDistance[i] > (distance) || (mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
+            if(mAccelerationDistance[i] < 0)
+                mDecelerationDistance[i] -= mAccelerationDistance[i];
+            if(mDecelerationDistance[i] > distance || (mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
             {
                 std::cout<<"joint "<<i<<"\n";
                 mOvershoot[i] = true;
                 //prepares variables for an immediate deceleration
                 if((mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
-                    mAcceleration = -mAcceleration;
+                    mAcceleration[i] = -mAcceleration[i];
                 mDecelerationTime[i] = fabs(mInitialVelocity[i])/fabs(mAcceleration[i]);
                 mDecelerationDistance[i] = 0.5 * mAcceleration[i]
                         * mDecelerationTime[i] * mDecelerationTime[i];
