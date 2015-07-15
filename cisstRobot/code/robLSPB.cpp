@@ -74,16 +74,27 @@ void robLSPB::Set(const vctDoubleVec & start,
     mTotalTime.SetSize(mDimension);//Time that includes overshot for time scale
     mOvershoot.SetSize(mDimension);
     mOvershoot.Zeros();
+    mFlipper.SetSize(mDimension);
+    mFlipper.Zeros();
     //bool mOvershoot [mDimension];
     // compute trajectory parameters
     for (size_t i = 0;
          i < mDimension;
          ++i) {
         // compute direction
-        const double distance = finish[i] - start[i];
+        double distance = finish[i] - start[i];
         if (distance < 0.0) {
-            mVelocity[i] *= -1.0;;
-            mAcceleration[i] *= -1.0;
+           //mVelocity[i] *= -1.0;;
+           //mAcceleration[i] *= -1.0;
+            if(mInitialVelocity[i] > 0)
+            {
+                mInitialVelocity[i] *= -1;
+                distance *= -1;
+                double temp = mStart[i];
+                mStart[i] = mFinish[i];
+                mFinish[i] = temp;
+                mFlipper[i] = true;
+            }
         } else if (distance == 0 && mInitialVelocity[i] == 0) {
             mVelocity[i] = 0.0;
             mAcceleration[i] = 0.0;
@@ -186,6 +197,13 @@ void robLSPB::Set(const vctDoubleVec & start,
             mDecelerationTime[i] = 0.0;
             mFinishTime[i] = 0.0;
         }
+        if(mFlipper[i]){
+            double temp = mStart[i];
+            mStart[i] = mFinish[i];
+            mFinish[i] = temp;
+            mInitialVelocity[i] *= -1;
+            mAcceleration[i] *= -1;
+        }
     }
     std::cout<<mOvershoot[0]<<" "<<mOvershoot[1]<<" "<<mOvershoot[2]<<"\n";
     // compute max time
@@ -199,6 +217,7 @@ void robLSPB::Set(const vctDoubleVec & start,
             mTimeScale.SetAll(1.0);
         }
     }
+
     mIsSet = true;
 }
 
@@ -207,6 +226,7 @@ void robLSPB::Evaluate(const double absoluteTime,
                        vctDoubleVec & velocity,
                        vctDoubleVec & acceleration)
 {
+
     // sanity checks
     if (!mIsSet) {
         cmnThrow("robLSPB::Evaluate trajectory parameters are not set yet");
@@ -256,7 +276,10 @@ void robLSPB::Evaluate(const double absoluteTime,
                 std::cout<<"dimTime > decelTime: " << mDecelerationTime[i] << "\n";
                 mOvershoot[i] = false;
                 //sets variables for the trajectory to get to the finish point
-                mStart[i] += mDecelerationDistance[i];
+                if(mFlipper[i])
+                    mStart[i] -= mDecelerationDistance[i];
+                else
+                    mStart[i] += mDecelerationDistance[i];
                 mDecelerationDistance[i] = mSecondAccelDistance[i];
                 mAccelerationDistance[i] = mSecondAccelDistance[i];
                 mAccelerationTime[i] = mSecondAccelTime[i];
@@ -295,6 +318,7 @@ void robLSPB::Evaluate(const double absoluteTime,
             } else {
                 // acceleration phase
                 if (conditionTime <= mAccelerationTime[i]) {
+                    std::cout<<mStart[i]<<"mStart\n";
                     std::cout<<"Accelerating|ConditionTime "<<conditionTime<<" |Velocity "<<velocity[i]<<" |Position "<<position[i]<<" |Acceleration "<<mAcceleration[i]<<"\n";
                     position[i] =
                             mStart[i]
