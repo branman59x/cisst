@@ -64,11 +64,11 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 //    maxAcceleration.Assign(1, 1, 0);
 //    initialVelocity.Assign(1, -1, 0);
 
-    start[0] = 12;
-    finish[0] = 2;
-    maxVelocity[0] = 2;
-    maxAcceleration[0] = 1;
-    initialVelocity[0] = -1;
+    start[0] = 100;
+    finish[0] = -100;
+    maxVelocity[0] = 100;
+    maxAcceleration[0] = 100;
+    initialVelocity[0] = 0;
 
     const double startTime = 2.0;
 
@@ -80,7 +80,7 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
     const double duration = trajectory.Duration();
     const double extraPlotTime = 2.0;
     const double plotTime = extraPlotTime + duration + extraPlotTime;
-    const size_t nbSteps = 2000;
+    const size_t nbSteps = 10000;
     const double step = plotTime / nbSteps;
 
     std::cout << "duration: " << duration << std::endl;
