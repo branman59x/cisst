@@ -273,7 +273,7 @@ void robLSPB::Evaluate(const double absoluteTime,
             }
 
         }
-        if(!mOvershoot[i])
+        if (!mOvershoot[i])
         {
             const double time = absoluteTime - mStartTime;
             if (time <= 0) {
@@ -297,7 +297,7 @@ void robLSPB::Evaluate(const double absoluteTime,
             } else {
                 // acceleration phase
                 if (dimTime <= mAccelerationTime[i]) {
-                    position[i] = mStart[i] + 0.5*mAcceleration[i] * time2 + mInitialVelocity[i]*dimTime;
+                    position[i] = mStart[i] + mInitialVelocity[i]*dimTime + 0.5*mAcceleration[i]*time2;
                     velocity[i] = mAcceleration[i] * dimTime + mInitialVelocity[i];
                     acceleration[i] = fabs(mAcceleration[i]);                    
                 } else if (dimTime >= (mFinishTime[i] - mDecelerationTime[i])|| -dimTime > mAccelerationTime[i]) {
@@ -326,7 +326,6 @@ void robLSPB::Evaluate(const double absoluteTime,
                     acceleration[i] = -fabs(mAcceleration[i]);
                 } else {
                     // constant velocity phase
-                    //FIGURE OUT A BETTER WAY TO DO THIS
                     // checks if initial velocity is greater than the max velocity and has not overshot
                     if((mAcceleration[i] > 0 && mInitialVelocity[i] > 0 && mInitialVelocity[i] > mVelocity[i]) || (mAcceleration[i] < 0 && mInitialVelocity[i] < 0 && fabs(mInitialVelocity[i]) > fabs(mVelocity[i])))
                         position[i] = -0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]

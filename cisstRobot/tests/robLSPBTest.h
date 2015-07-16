@@ -40,6 +40,23 @@ class robLSPBTest : public CppUnit::TestFixture
     
     void Test1(void);
     void Test2(void);
+
+ protected:
+
+    void SetDimension(const size_t mDimension);
+    void LogAndTestContinuity(robLSPB & trajectory,
+                              const std::string & name);
+
+    size_t mDimension;
+    vctDoubleVec
+        mStart,
+        mFinish,
+        mMaxVelocity,
+        mMaxAcceleration,
+        mPosition,
+        mVelocity,
+        mAcceleration,
+        mInitialVelocity;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(robLSPBTest);

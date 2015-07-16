@@ -4,229 +4,150 @@
 /*
   Author(s):  Anton Deguet
   Created on: 2015-07-14
-  
+
   (C) Copyright 2015 Johns Hopkins University (JHU), All Rights Reserved.
-
 --- begin cisst license - do not edit ---
-
 This software is provided "as is" under an open source license, with
 no warranty.  The complete license can be found in license.txt and
 http://www.cisst.org/cisst/license.txt.
-
 --- end cisst license ---
 */
 
 
 #include "robLSPBTest.h"
 
+void robLSPBTest::SetDimension(const size_t dim)
+{
+    mDimension = dim;
+    mStart.SetSize(mDimension);
+    mFinish.SetSize(mDimension);
+    mMaxVelocity.SetSize(mDimension);
+    mMaxAcceleration.SetSize(mDimension);
+    mPosition.SetSize(mDimension);
+    mVelocity.SetSize(mDimension);
+    mAcceleration.SetSize(mDimension);
+    mInitialVelocity.SetSize(mDimension);
+}
 
-void robLSPBTest::Test1(void) {
-    const size_t dimension = 1;
-    vctDoubleVec
-        start,
-        finish,
-        maxVelocity,
-        maxAcceleration,
-        position,
-        velocity,
-        acceleration,
-        initialVelocity;
-    start.SetSize(dimension);
-    finish.SetSize(dimension);
-    maxVelocity.SetSize(dimension);
-    maxAcceleration.SetSize(dimension);
-    position.SetSize(dimension);
-    velocity.SetSize(dimension);
-    acceleration.SetSize(dimension);
-    initialVelocity.SetSize(dimension);
-
-    start[0] = 0.0;
-    finish[0] = 10.0;
-    maxVelocity[0] = 10.0;
-    maxAcceleration[0] = 2.0;
-    initialVelocity[0] = 5.0;
-
-    const double startTime = 2.0;
-
-    robLSPB trajectory;
-    trajectory.Set(start, finish,
-                   maxVelocity, maxAcceleration,initialVelocity,
-                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
-
+void robLSPBTest::LogAndTestContinuity(robLSPB & trajectory,
+                                       const std::string & name)
+{
+    const double startTime = trajectory.StartTime();
     const double duration = trajectory.Duration();
     const double extraPlotTime = 2.0;
     const double plotTime = extraPlotTime + duration + extraPlotTime;
     const size_t nbSteps = 2000;
     const double step = plotTime / nbSteps;
 
-    std::cout << "duration: " << duration << std::endl;
-
+    // first log all data without tests
     std::ofstream log, logHeader;
-    const char * logName = "robLSPBTest1.txt";
-    const char * logHeaderName = "robLSPBTest1-header.txt";
-    log.open(logName);
-    logHeader.open(logHeaderName);
+    const std::string logName = "robLSPB" + name + ".txt";
+    const std::string logHeaderName = "robLSPB" + name + "-header.txt";
+    log.open(logName.c_str());
+    logHeader.open(logHeaderName.c_str());
+
     // header for logs
     logHeader << cmnData<double>::SerializeDescription(duration, ',', "time")
               << ','
-              << cmnData<vctDoubleVec>::SerializeDescription(position, ',', "position")
+              << cmnData<vctDoubleVec>::SerializeDescription(mPosition, ',', "position")
               << ','
-              << cmnData<vctDoubleVec>::SerializeDescription(velocity, ',', "velocity")
+              << cmnData<vctDoubleVec>::SerializeDescription(mVelocity, ',', "velocity")
               << ','
-              << cmnData<vctDoubleVec>::SerializeDescription(acceleration, ',', "acceleration")
+              << cmnData<vctDoubleVec>::SerializeDescription(mAcceleration, ',', "acceleration")
               << std::endl;
-
-    vctDoubleVec previousPosition(start);
-    vctDoubleVec previousVelocity(initialVelocity);
-    double previousTime = startTime - extraPlotTime - step;
 
     for (size_t i = 0; i < nbSteps; ++i) {
         double now = (startTime - extraPlotTime) + i * step;
-        trajectory.Evaluate(now , position, velocity, acceleration);
+        trajectory.Evaluate(now , mPosition, mVelocity, mAcceleration);
+        // log to csv file
+        cmnData<double>::SerializeText(now, log);
+        log << ',';
+        cmnData<vctDoubleVec>::SerializeText(mPosition, log);
+        log << ',';
+        cmnData<vctDoubleVec>::SerializeText(mVelocity, log);
+        log << ',';
+        cmnData<vctDoubleVec>::SerializeText(mAcceleration, log);
+        log << std::endl;
+    }
+    log.close();
+    logHeader.close();
 
-        // tests
-        CPPUNIT_ASSERT(velocity.LesserOrEqual(maxVelocity));
-        CPPUNIT_ASSERT(velocity.GreaterOrEqual(-maxVelocity));
-        CPPUNIT_ASSERT(acceleration.LesserOrEqual(maxAcceleration));
-        CPPUNIT_ASSERT(acceleration.GreaterOrEqual(-maxAcceleration));
+    // Then test continuity
+    vctDoubleVec previousPosition(mStart);
+    vctDoubleVec previousVelocity(mInitialVelocity);
+    double previousTime = startTime - extraPlotTime - step;
+
+    vctDoubleVec maxVelocity(mDimension);
+    maxVelocity.AbsOf(mInitialVelocity);
+    maxVelocity.ElementwiseMax(mMaxVelocity);
+
+    std::cerr << "max velocities " << maxVelocity << std::endl;
+
+    for (size_t i = 0; i < nbSteps; ++i) {
+        double now = (startTime - extraPlotTime) + i * step;
+        trajectory.Evaluate(now , mPosition, mVelocity, mAcceleration);
+
+        // basic tests
+        CPPUNIT_ASSERT(mVelocity.LesserOrEqual(maxVelocity));
+        CPPUNIT_ASSERT(mVelocity.GreaterOrEqual(-maxVelocity));
+        CPPUNIT_ASSERT(mAcceleration.LesserOrEqual(mMaxAcceleration));
+        CPPUNIT_ASSERT(mAcceleration.GreaterOrEqual(-mMaxAcceleration));
 
         // compare previous and current to find derivatives
         double deltaTime = now - previousTime;
-
-        vctDoubleVec deltaPosition(dimension);
-        deltaPosition.DifferenceOf(position, previousPosition);
+        vctDoubleVec deltaPosition(mDimension);
+        deltaPosition.DifferenceOf(mPosition, previousPosition);
         deltaPosition.Divide(deltaTime);
-        std::cerr << deltaPosition[0] - 10.0 << std::endl;
         CPPUNIT_ASSERT(deltaPosition.LesserOrEqual(maxVelocity * 1.001));
         CPPUNIT_ASSERT(deltaPosition.GreaterOrEqual(-maxVelocity * 1.001));
 
-        vctDoubleVec deltaVelocity(dimension);
-        deltaPosition.DifferenceOf(velocity, previousVelocity);
+        vctDoubleVec deltaVelocity(mDimension);
+        deltaPosition.DifferenceOf(mVelocity, previousVelocity);
         deltaPosition.Divide(deltaTime);
-        CPPUNIT_ASSERT(deltaVelocity.LesserOrEqual(maxAcceleration * 1.001));
-        CPPUNIT_ASSERT(deltaVelocity.GreaterOrEqual(-maxAcceleration * 1.001));
+        CPPUNIT_ASSERT(deltaVelocity.LesserOrEqual(mMaxAcceleration * 1.001));
+        CPPUNIT_ASSERT(deltaVelocity.GreaterOrEqual(-mMaxAcceleration * 1.001));
 
         previousTime = now;
-        previousPosition.Assign(position);
-        previousVelocity.Assign(velocity);
-
-        // log to csv file
-        cmnData<double>::SerializeText(now, log);
-        log << ',';
-        cmnData<vctDoubleVec>::SerializeText(position, log);
-        log << ',';
-        cmnData<vctDoubleVec>::SerializeText(velocity, log);
-        log << ',';
-        cmnData<vctDoubleVec>::SerializeText(acceleration, log);
-        log << std::endl;
+        previousPosition.Assign(mPosition);
+        previousVelocity.Assign(mVelocity);
     }
-
-    log.close();
-    logHeader.close();
 }
 
-void robLSPBTest::Test2(void) {
-    const size_t dimension = 1;
-    vctDoubleVec
-        start,
-        finish,
-        maxVelocity,
-        maxAcceleration,
-        position,
-        velocity,
-        acceleration,
-        initialVelocity;
-    start.SetSize(dimension);
-    finish.SetSize(dimension);
-    maxVelocity.SetSize(dimension);
-    maxAcceleration.SetSize(dimension);
-    position.SetSize(dimension);
-    velocity.SetSize(dimension);
-    acceleration.SetSize(dimension);
-    initialVelocity.SetSize(dimension);
 
-    start[0] = 1.0;
-    finish[0] = 30.0;
-    maxVelocity[0] = 10.0;
-    maxAcceleration[0] = 50.0;
-    initialVelocity[0] = 29.0;
+void robLSPBTest::Test1(void)
+{
+    SetDimension(1);
+
+    mStart[0] = 0.0;
+    mFinish[0] = 10.0;
+    mMaxVelocity[0] = 10.0;
+    mMaxAcceleration[0] = 2.0;
+    mInitialVelocity[0] = 5.0;
 
     const double startTime = 2.0;
-
     robLSPB trajectory;
-    trajectory.Set(start, finish,
-                   maxVelocity, maxAcceleration,initialVelocity,
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    const double duration = trajectory.Duration();
-    const double extraPlotTime = 2.0;
-    const double plotTime = extraPlotTime + duration + extraPlotTime;
-    const size_t nbSteps = 2000;
-    const double step = plotTime / nbSteps;
+    LogAndTestContinuity(trajectory, "Test1");
+}
 
-    std::cout << "duration: " << duration << std::endl;
+void robLSPBTest::Test2(void)
+{
+    SetDimension(1);
 
-    std::ofstream log, logHeader;
-    const char * logName = "robLSPBTest2.txt";
-    const char * logHeaderName = "robLSPBTest2-header.txt";
-    log.open(logName);
-    logHeader.open(logHeaderName);
-    // header for logs
-    logHeader << cmnData<double>::SerializeDescription(duration, ',', "time")
-              << ','
-              << cmnData<vctDoubleVec>::SerializeDescription(position, ',', "position")
-              << ','
-              << cmnData<vctDoubleVec>::SerializeDescription(velocity, ',', "velocity")
-              << ','
-              << cmnData<vctDoubleVec>::SerializeDescription(acceleration, ',', "acceleration")
-              << std::endl;
+    mStart[0] = 1.0;
+    mFinish[0] = 30.0;
+    mMaxVelocity[0] = 10.0;
+    mMaxAcceleration[0] = 50.0;
+    mInitialVelocity[0] = 29.0;
 
-    vctDoubleVec previousPosition(start);
-    vctDoubleVec previousVelocity(initialVelocity);
-    double previousTime = startTime - extraPlotTime - step;
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    for (size_t i = 0; i < nbSteps; ++i) {
-        double now = (startTime - extraPlotTime) + i * step;
-        trajectory.Evaluate(now , position, velocity, acceleration);
-
-        // tests
-        //CPPUNIT_ASSERT(velocity.LesserOrEqual(maxVelocity));
-        //CPPUNIT_ASSERT(velocity.GreaterOrEqual(-maxVelocity));
-        CPPUNIT_ASSERT(acceleration.LesserOrEqual(maxAcceleration));
-        CPPUNIT_ASSERT(acceleration.GreaterOrEqual(-maxAcceleration));
-
-        // compare previous and current to find derivatives
-        double deltaTime = now - previousTime;
-
-        vctDoubleVec deltaPosition(dimension);
-        deltaPosition.DifferenceOf(position, previousPosition);
-        deltaPosition.Divide(deltaTime);
-        std::cerr << deltaPosition[0] << std::endl;
-        vctDoubleVec totallyMaxVelocity(maxVelocity);
-        totallyMaxVelocity.ElementwiseMax(initialVelocity);
-        CPPUNIT_ASSERT(deltaPosition.LesserOrEqual(totallyMaxVelocity * 1.001));
-        CPPUNIT_ASSERT(deltaPosition.GreaterOrEqual(-maxVelocity * 1.001));
-
-        vctDoubleVec deltaVelocity(dimension);
-        deltaPosition.DifferenceOf(velocity, previousVelocity);
-        deltaPosition.Divide(deltaTime);
-        CPPUNIT_ASSERT(deltaVelocity.LesserOrEqual(maxAcceleration * 1.001));
-        CPPUNIT_ASSERT(deltaVelocity.GreaterOrEqual(-maxAcceleration * 1.001));
-        previousTime = now;
-        previousPosition.Assign(position);
-        previousVelocity.Assign(velocity);
-
-        // log to csv file
-        cmnData<double>::SerializeText(now, log);
-        log << ',';
-        cmnData<vctDoubleVec>::SerializeText(position, log);
-        log << ',';
-        cmnData<vctDoubleVec>::SerializeText(velocity, log);
-        log << ',';
-        cmnData<vctDoubleVec>::SerializeText(acceleration, log);
-        log << std::endl;
-    }
-
-    log.close();
-    logHeader.close();
+    LogAndTestContinuity(trajectory, "Test2");
 }
