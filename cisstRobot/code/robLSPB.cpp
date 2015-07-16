@@ -106,7 +106,7 @@ void robLSPB::Set(const vctDoubleVec & start,
                 cmnThrow("robLSPB::Set: acceleration must be greater than zero");
             }
             //calculates default times and distances
-            mAccelerationTime[i] = mVelocity[i]-mInitialVelocity[i]/mAcceleration[i];
+            mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/mAcceleration[i];
             mDecelerationTime[i] = mVelocity[i] / mAcceleration[i];
             mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
                     * mAccelerationTime[i] * mAccelerationTime[i];
@@ -132,9 +132,12 @@ void robLSPB::Set(const vctDoubleVec & start,
                     //calculates the times with an initial velocity that is not 0
                     mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/(mAcceleration[i]);
                     mDecelerationTime[i] = mVelocity[i]/mAcceleration[i];
+                    std::cout<<"AccelTime" <<mAccelerationTime[i] <<" DecelTime "<<mDecelerationTime[i]<<"\n";
                     if(mAccelerationTime[i] <= 0)
                         mDecelerationTime[i] += mAccelerationTime[i];
                     mFinishTime[i] = mAccelerationTime[i] + mDecelerationTime[i];
+                    std::cout<<"AccelTime" <<mAccelerationTime[i] <<" DecelTime "<<mDecelerationTime[i]<<"\n";
+                    std::cout<<mFinishTime[i]<<" FT\n";
                 }
                 //calculates the distances for a movement that does not reach a constant velocity
                 //and has an initial velocity that does not equal 0
