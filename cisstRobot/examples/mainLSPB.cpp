@@ -25,7 +25,7 @@ http://www.cisst.org/cisst/license.txt.
 
 int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 {
-    const size_t dimension = 1;
+    const size_t dimension = 6;
     vctDoubleVec
         start,
         finish,
@@ -46,36 +46,31 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 
     // set parameters
     //0 vel,  non0 vel, overshoot reg, max less than init, opposite direction, opposite direction and max less than init
-//    start.Assign(          0.0, 2.0, 3.0);
-//    finish.Assign(        10.0, 12.0, 15.0);
-//    maxVelocity.Assign(    4.0, 2.0, 5.0);
-//    maxAcceleration.Assign(1.0, 1.0, 2.0);
-//    initialVelocity.Assign(5.0, -1.0, -6.0);
 
-//    start.Assign(          0.0, 2.0, 3.0, 0.0, 2.0, 3.0);
-//    finish.Assign(        10.0, 12.0, 5.0, 10.0, 12.0, 15.0);
-//    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
-//    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
-//    initialVelocity.Assign(0.0, 1.0, 4.0, 5.0, -1.0, -6.0);
+    start.Assign(          0.0, 2.0, 3.0, 0.0, 2.0, 3.0);
+    finish.Assign(        10.0, 12.0, 5.0, 10.0, 12.0, 15.0);
+    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
+    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
+    initialVelocity.Assign(0.0, 1.0, 4.0, 5.0, -1.0, -6.0);
 
 //    start.Assign(          10, 0, 0);
 //    finish.Assign(         0, 10, 0);
 //    maxVelocity.Assign(    2, 2, 0);
-    //    maxAcceleration.Assign(1, 1, 0);
-    //    initialVelocity.Assign(-3, 3, 0);
+//    maxAcceleration.Assign(1, 1, 0);
+//    initialVelocity.Assign(-3, 3, 0);
 
-//    start[0] = -10;
-//    finish[0] = -5;
+//    start[0] = 10;
+//    finish[0] = 0;
 //    maxVelocity[0] = 2;
 //    maxAcceleration[0] = 1;
 //    initialVelocity[0] = -3;
 
 
-    start[0] = 1.0;
-    finish[0] = 30.0;
-    maxVelocity[0] = 10.0;
-    maxAcceleration[0] = 50.0;
-    initialVelocity[0] = 29.0;
+//    start[0] = 1.0;
+//    finish[0] = 30.0;
+//    maxVelocity[0] = 10.0;
+//    maxAcceleration[0] = 50.0;
+//    initialVelocity[0] = 29.0;
 
     const double startTime = 2.0;
 
