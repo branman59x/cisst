@@ -72,54 +72,56 @@ void robLSPBTest::LogAndTestContinuity(robLSPB & trajectory,
 
     log.close();
     logHeader.close();
-
+    std::cout<<"NOW TESTING CONTINUITY"<< std::endl;
     // Then test continuity
     vctDoubleVec previousPosition(mStart);
     vctDoubleVec previousVelocity(mInitialVelocity);
-    double previousTime = startTime - extraPlotTime - step;
-
+    vctDoubleVec previousTime(mDimension); //= startTime - extraPlotTime - step;
+    previousTime.SetAll(startTime - extraPlotTime - step);
     vctDoubleVec maxVelocity(mDimension);
     maxVelocity.AbsOf(mInitialVelocity);
     maxVelocity.ElementwiseMax(mMaxVelocity);
 
     std::cerr << "max velocities " << maxVelocity << std::endl;
 
-    for (size_t i = 0; i < nbSteps; ++i) {
-        double now = (startTime - extraPlotTime) + i * step;
+    for (size_t j = 0; j < nbSteps; j++) {
+        double now = (startTime - extraPlotTime) + j * step;
         trajectory.Evaluate(now , mPosition, mVelocity, mAcceleration);
         std::cerr << now << std::endl;
 
-        // basic tests
-        CPPUNIT_ASSERT(mVelocity.LesserOrEqual(maxVelocity));
-        CPPUNIT_ASSERT(mVelocity.GreaterOrEqual(-maxVelocity));
-        CPPUNIT_ASSERT(mAcceleration.LesserOrEqual(mMaxAcceleration));
-        CPPUNIT_ASSERT(mAcceleration.GreaterOrEqual(-mMaxAcceleration));
+        for (size_t i = 0; i < mDimension;++i){
+            // basic tests
+            CPPUNIT_ASSERT(mVelocity[i] <= maxVelocity[i]);
+            CPPUNIT_ASSERT(mVelocity[i] >= -maxVelocity[i]);
+            CPPUNIT_ASSERT(mAcceleration[i] <= mMaxAcceleration[i]);
+            CPPUNIT_ASSERT(mAcceleration[i] >= -mMaxAcceleration[i]);
 
-        // compare previous and current to find derivatives
-        double deltaTime = now - previousTime;
-        vctDoubleVec deltaPosition(mDimension);
-        deltaPosition.DifferenceOf(mPosition, previousPosition);
-        std::cerr << "previous " << previousPosition << std::endl
-                  << "current  " << mPosition << std::endl
-                  << "delta    " << deltaPosition << std::endl
-                  << "maxVelocity " << maxVelocity << std::endl;
-        deltaPosition.Divide(deltaTime);
+            // compare previous and current to find derivatives
+            vctDoubleVec deltaTime(mDimension);
+            deltaTime[i] = now - previousTime[i];
+            vctDoubleVec deltaPosition(mDimension);
+            deltaPosition[i] = mPosition[i] - previousPosition[i];
+            std::cerr << "previous " << previousPosition[i] << std::endl
+                      << "current  " << mPosition[i] << std::endl
+                      << "delta    " << deltaPosition[i] << std::endl
+                      << "maxVelocity " << maxVelocity[i] << std::endl;
+            deltaPosition[i] /= deltaTime[i];
 
-        CPPUNIT_ASSERT(deltaPosition.LesserOrEqual(maxVelocity * 1.1));
-        CPPUNIT_ASSERT(deltaPosition.GreaterOrEqual(-maxVelocity * 1.1));
+            CPPUNIT_ASSERT(deltaPosition[i] <= (maxVelocity[i] * 1.1));
+            CPPUNIT_ASSERT(deltaPosition[i] >= (-maxVelocity[i] * 1.1));
 
-        vctDoubleVec deltaVelocity(mDimension);
-        deltaPosition.DifferenceOf(mVelocity, previousVelocity);
-        deltaPosition.Divide(deltaTime);
-        CPPUNIT_ASSERT(deltaVelocity.LesserOrEqual(mMaxAcceleration * 1.1));
-        CPPUNIT_ASSERT(deltaVelocity.GreaterOrEqual(-mMaxAcceleration * 1.1));
+            vctDoubleVec deltaVelocity(mDimension);
+            deltaVelocity[i] = mVelocity[i] - previousVelocity[i];
+            deltaVelocity[i] /= deltaTime[i];
+            CPPUNIT_ASSERT(deltaVelocity[i] <= (mMaxAcceleration[i] * 1.1));
+            CPPUNIT_ASSERT(deltaVelocity[i] >= (-mMaxAcceleration[i] * 1.1));
 
-        previousTime = now;
-        previousPosition.Assign(mPosition);
-        previousVelocity.Assign(mVelocity);
+            previousTime[i] = now;
+            previousPosition[i] = mPosition[i];
+            previousVelocity[i] = mVelocity[i];
+        }
     }
 }
-
 
 void robLSPBTest::Test1(void)
 {
@@ -142,11 +144,16 @@ void robLSPBTest::Test1(void)
 void robLSPBTest::Test2(void)
 {
     SetDimension(1);
-    mStart[0] = 1.0;
-    mFinish[0] = 30.0;
-    mMaxVelocity[0] = 10.0;
-    mMaxAcceleration[0] = 50.0;
-    mInitialVelocity[0] = 29.0;
+//    mStart[0] = 1.0;
+//    mFinish[0] = 30.0;
+//    mMaxVelocity[0] = 10.0;
+//    mMaxAcceleration[0] = 50.0;
+//    mInitialVelocity[0] = 29.0;
+    mStart[0] = 0;
+    mFinish[0] = 10;
+    mMaxVelocity[0] = 4;
+    mMaxAcceleration[0] = 1;
+    mInitialVelocity[0] = 0;
 
     const double startTime = 2.0;
     robLSPB trajectory;
@@ -174,4 +181,58 @@ void robLSPBTest::Test3(void)
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
     LogAndTestContinuity(trajectory, "Test3");
+}
+
+void robLSPBTest::Test4(void)
+{
+    SetDimension(2);
+    mStart.Assign(0,2);
+    mFinish.Assign(10,12);
+    mMaxVelocity.Assign(4,2);
+    mMaxAcceleration.Assign(1,1);
+    mInitialVelocity.Assign(0,1);
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    LogAndTestContinuity(trajectory, "Test4");
+}
+
+void robLSPBTest::Test5(void)
+{
+    SetDimension(1);
+    mStart[0] = 0;
+    mFinish[0] = 10;
+    mMaxVelocity[0] = 4;
+    mMaxAcceleration[0] = 1;
+    mInitialVelocity[0] = 0;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    LogAndTestContinuity(trajectory, "Test5");
+}
+
+void robLSPBTest::Test6(void)
+{
+    SetDimension(1);
+    mStart[0] = 2;
+    mFinish[0] = 12;
+    mMaxVelocity[0] = 2;
+    mMaxAcceleration[0] = 1;
+    mInitialVelocity[0] = 1;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    LogAndTestContinuity(trajectory, "Test6");
 }
