@@ -59,18 +59,11 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 //    maxAcceleration.Assign(1, 1, 0);
 //    initialVelocity.Assign(-3, 3, 0);
 
-//    start[0] = 10;
-//    finish[0] = 0;
-//    maxVelocity[0] = 2;
-//    maxAcceleration[0] = 1;
-//    initialVelocity[0] = -3;
-
-
-//    start[0] = 1.0;
-//    finish[0] = 30.0;
-//    maxVelocity[0] = 10.0;
-//    maxAcceleration[0] = 50.0;
-//    initialVelocity[0] = 29.0;
+//    start[0] = 3;
+//    finish[0] = 10;
+//    maxVelocity[0] = 5.0;
+//    maxAcceleration[0] = 3.0;
+//    initialVelocity[0] = 1.0;
 
     const double startTime = 2.0;
 
