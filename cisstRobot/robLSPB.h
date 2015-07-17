@@ -71,7 +71,6 @@ class CISST_EXPORT robLSPB {
         mDecelerationTime,
         mFinishTime,
         mTimeScale,
-        mTemp,
         mInitialVelocity,
         mSecondDistance,
         mSecondAccelTime,
@@ -121,16 +120,16 @@ class CISST_EXPORT robLSPB {
     void Evaluate(const double time,
                   vctDoubleVec & position,
                   vctDoubleVec & velocity,
-                  vctDoubleVec & acceleration);
+                  vctDoubleVec & acceleration) const;
 
     void Evaluate(const double time,
-                  vctDoubleVec & position);
+                  vctDoubleVec & position) const;
 
     //! Return start time
-    double & StartTime(void);
+    const double & StartTime(void) const;
 
     //! Return duration
-    double Duration(void) const;
+    const double & Duration(void) const;
 };
 
 #endif // _robLSPB_h

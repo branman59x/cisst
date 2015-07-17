@@ -236,7 +236,7 @@ void robLSPB::Set(const vctDoubleVec & start,
 void robLSPB::Evaluate(const double absoluteTime,
                        vctDoubleVec & position,
                        vctDoubleVec & velocity,
-                       vctDoubleVec & acceleration)
+                       vctDoubleVec & acceleration) const
 {
 
     // sanity checks
@@ -323,20 +323,24 @@ void robLSPB::Evaluate(const double absoluteTime,
             velocity[i] = mVelocity[i];
             acceleration[i] = 0.0;
         }
+        if (mCoordination == LSPB_DURATION) {
+            velocity[i] *= mTimeScale[i];
+            acceleration[i] *= (mTimeScale[i] * mTimeScale[i]);
+        }
     }
 }
 
 void robLSPB::Evaluate(const double absoluteTime,
-                       vctDoubleVec & position)
+                       vctDoubleVec & position) const
 {
-    mTemp.SetSize(mDimension);
-    Evaluate(absoluteTime, position, mTemp, mTemp);
+    vctDoubleVec temp(mDimension);
+    Evaluate(absoluteTime, position, temp, temp);
 }
 
-double & robLSPB::StartTime(void) {
+const double & robLSPB::StartTime(void) const {
     return mStartTime;
 }
 
-double robLSPB::Duration(void) const {
+const double & robLSPB::Duration(void) const {
     return mDuration;
 }

@@ -51,9 +51,15 @@ class robLSPBTest : public CppUnit::TestFixture
 
  protected:
 
+    /*! Set dimension of all data members */
     void SetDimension(const size_t mDimension);
-    void LogAndTestContinuity(robLSPB & trajectory,
-                              const std::string & name);
+
+    /*! Use the trajectory to create a csv file with position, velocity and acceleration. */
+    void Log(const robLSPB & trajectory,
+             const std::string & name);
+
+    /*! Basic tests of continuity and bounds on position, velocity and acceleration */
+    void TestContinuity(const robLSPB & trajectory);
 
     size_t mDimension;
     vctDoubleVec
