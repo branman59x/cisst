@@ -75,17 +75,13 @@ class CISST_EXPORT robLSPB {
         mSecondDistance,
         mSecondAccelTime,
         mSecondAccelDistance,
-        mOvershotTime,
-        mTotalTime,
+        mOvershotTime, // time at end of overshoot
+        mOvershotInitialVelocity, // velocity used to start after overshot (initial velocity if no overshot, 0 otherwise)
+        mOvershotDirection, // direction after overshot: -1.0 or 1.0.  -1.0 for trajectory past finish point, i.e. going back
         mAccelerationDistance,
         mDecelerationDistance,
-        mOvershotAcceleration,
-        mOvershotInitialVelocity,
-        mOvershotStart;
-    vctBoolVec
-        mOvershoot,
-        mFlipper;
-
+        mOvershotDistance, // position reached at end of overshoot
+        mDirection;
 
  public:
     robLSPB(void);

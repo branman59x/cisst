@@ -69,163 +69,113 @@ void robLSPB::Set(const vctDoubleVec & start,
     mDecelerationDistance.SetSize(mDimension);
     mAccelerationDistance.Zeros();
     mDecelerationDistance.Zeros();
-    mTotalTime.SetSize(mDimension);//Time that includes overshot for time scale
-    mOvershoot.SetSize(mDimension);
-    mOvershoot.Zeros();
-    mFlipper.SetSize(mDimension);// flips the graph if there is a negative dispalcement
-    mFlipper.Zeros();
-    mOvershotAcceleration.SetSize(mDimension);
+    mDirection.SetSize(mDimension);
     mOvershotInitialVelocity.SetSize(mDimension);
-    mOvershotStart.SetSize(mDimension);
+    mOvershotDirection.SetSize(mDimension);
+    mOvershotInitialVelocity.SetSize(mDimension);
+
     // compute trajectory parameters
     for (size_t i = 0;
          i < mDimension;
          ++i) {
-        // make sure that the max velocity and max acceleration are positive
-        mVelocity[i] = fabs(mVelocity[i]);
-        mAcceleration[i] = fabs(mAcceleration[i]);
         // compute direction
-        double distance = finish[i] - start[i];
-        if (distance < 0.0) {
-            //sets variables so that the graph will flip as if the displacement was positive
-            mInitialVelocity[i] *= -1;
-            distance *= -1;
-            double temp = mStart[i];
-            mStart[i] = mFinish[i];
-            mFinish[i] = temp;
-            mFlipper[i] = true;
-        } else if (distance == 0 && mInitialVelocity[i] == 0) {
-            mVelocity[i] = 0.0;
-            mAcceleration[i] = 0.0;
+        double displacement = mFinish[i] - mStart[i];
+        if (displacement < 0.0) {
+            // sets variables so that the graph will flip as if the displacement was positive
+            mDirection[i] = -1.0;
+            mInitialVelocity[i] *= -1.0;
+            displacement *= -1.0;
+            mStart[i] *= -1.0;
+            mFinish[i] *= -1.0;
+        } else {
+            mDirection[i] = 1.0;
+            if (displacement == 0 && mInitialVelocity[i] == 0) {
+                mVelocity[i] = 0.0;
+                mAcceleration[i] = 0.0;
+            }
         }
         // compute time if distance != 0
-        if (distance != 0 || mInitialVelocity[i] != 0) {
+        if (displacement != 0 || mInitialVelocity[i] != 0) {
             if (mVelocity[i] == 0.0) {
-                cmnThrow("robLSPB::Set:  be greater than zero");
+                cmnThrow("robLSPB::Set: velocity must be greater than zero");
             }
             if (mAcceleration[i] == 0.0) {
                 cmnThrow("robLSPB::Set: acceleration must be greater than zero");
             }
-            //calculates default times and distances
-            mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/mAcceleration[i];
-            mDecelerationTime[i] = mVelocity[i] / mAcceleration[i];
-            mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
-                    * mAccelerationTime[i] * mAccelerationTime[i];
-            mDecelerationDistance[i] = 0.5 * mAcceleration[i]
-                    * mDecelerationTime[i] * mDecelerationTime[i];
-            // check distance over max accel and max decel at end of
-            // acceleration phase to see if we're past mid-point.
-            if ((mAccelerationDistance[i] + mDecelerationDistance[i]) >= distance) {
-                //calculates the times with an initial velocity of 0
-                if(mInitialVelocity[i]==0){
-                    mFinishTime[i] = 2 * sqrt(distance / mAcceleration[i]);
-                    mAccelerationTime[i] = mFinishTime[i] * 0.5;
-                    mDecelerationTime[i] = mFinishTime[i] * 0.5;
-                }
-                else{
-                    //calculates the max velocity that the velocity will hit (may be lower than predetermined)
-                    double tempMaxVelocity = mVelocity[i];
-                    mVelocity[i] = sqrt((2*mAcceleration[i]*distance + mInitialVelocity[i]*mInitialVelocity[i])/2);
-                    if(mVelocity[i] > tempMaxVelocity)
-                    {
-                        mVelocity[i] = tempMaxVelocity;
-                    }
-                    //calculates the times with an initial velocity that is not 0
-                    mAccelerationTime[i] = (mVelocity[i]-mInitialVelocity[i])/(mAcceleration[i]);
-                    mDecelerationTime[i] = mVelocity[i]/mAcceleration[i];
-                    if(mAccelerationTime[i] <= 0)
-                        mDecelerationTime[i] += mAccelerationTime[i];
-                    mFinishTime[i] = mAccelerationTime[i] + mDecelerationTime[i];
-                }
-                //calculates the distances for a movement that does not reach a constant velocity
-                //and has an initial velocity that does not equal 0
-                mAccelerationDistance[i] = mInitialVelocity[i] * mAccelerationTime[i] + 0.5 * mAcceleration[i]
-                        * mAccelerationTime[i] * mAccelerationTime[i];
-                mDecelerationDistance[i] = 0.5 * mAcceleration[i]
-                        * mDecelerationTime[i] * mDecelerationTime[i];
+            // look for overshoot, first case we are going in wrong direction
+            if (mInitialVelocity[i] < 0.0) {
+                mOvershotTime[i] = -(mInitialVelocity[i] / mAcceleration[i]);
+                mOvershotDistance[i] =
+                        - 0.5 * mAcceleration[i] * mOvershotTime[i] * mOvershotTime[i];
+                mOvershotInitialVelocity[i] = 0.0;
+                mOvershotDirection[i] = 1.0;
             } else {
-                //calculates the finish time for a movement that reaches a constant velocity
-                mFinishTime[i] = (distance-fabs(mAccelerationDistance[i])-mDecelerationDistance[i]) / mVelocity[i] + fabs(mAccelerationTime[i]) + mDecelerationTime[i];
-            }
-            mTotalTime[i] = mFinishTime[i];
-
-            if(mAccelerationDistance[i] < 0)
-                mDecelerationDistance[i] -= mAccelerationDistance[i];
-
-            if(!mFlipper[i]){
-                mOvershotStart[i] = mStart[i];
-                mOvershotInitialVelocity[i] = mInitialVelocity[i];
-            } else{
-                mOvershotStart[i] = mFinish[i];
-                mOvershotInitialVelocity[i] = -mInitialVelocity[i];
-            }
-            //checks for overshoot or if displacement is opposite initial velocity
-            if(mDecelerationDistance[i] > distance || (mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
-            {
-                mOvershoot[i] = true;
-                //prepares variables for an immediate deceleration
-                if((mInitialVelocity[i] != 0 && mInitialVelocity[i]/fabs(mInitialVelocity[i]) != distance/fabs(distance)))
-                    mAcceleration[i] = -mAcceleration[i];
-                mOvershotTime[i] = fabs(mInitialVelocity[i])/fabs(mAcceleration[i]);
-                mDecelerationDistance[i] = 0.5 * mAcceleration[i]
-                        * mOvershotTime[i] * mOvershotTime[i];
-
-                //calculates variables for a new trajectory after deceleration
-                mSecondDistance[i] = mFinish[i] - (mStart[i] + mDecelerationDistance[i]);
-                double tempMaxVelocity = mVelocity[i];
-                mVelocity[i] = sqrt(fabs(mAcceleration[i]*mSecondDistance[i]));
-                if(mVelocity[i] > tempMaxVelocity)
-                {
-                    mVelocity[i] = (tempMaxVelocity);
+                mOvershotTime[i] = mInitialVelocity[i] / mAcceleration[i];
+                mOvershotDistance[i] = mStart[i]
+                        + mInitialVelocity[i] * mOvershotTime[i]
+                        + 0.5 * mAcceleration[i]* mOvershotTime[i] * mOvershotTime[i];
+                // test if this is really an overshot
+                if (mOvershotDistance[i] <= mFinish[i]) {
+                    // test if we start with an initial velocity too high and we need to deccelerate
+                    if (mInitialVelocity[i] > mVelocity[i]) {
+                        mOvershotTime[i] = (mInitialVelocity[i] - mVelocity[i]) / mAcceleration[i];
+                        mOvershotDistance[i] =
+                                0.5 * mAcceleration[i]* mOvershotTime[i] * mOvershotTime[i];
+                        mOvershotInitialVelocity[i] = mVelocity[i];
+                        mOvershotDirection[i] = 1.0;
+                    } else {
+                        // really not an overshot
+                        mOvershotTime[i] = mStartTime;
+                        mOvershotDistance[i] = mStart[i];
+                        mOvershotInitialVelocity[i] = mInitialVelocity[i];
+                        mOvershotDirection[i] = 1.0;
+                    }
+                } else {
+                    // we had an overshot, we stopped
+                    mOvershotInitialVelocity[i] = 0.0;
+                    // and then go backward
+                    mOvershotDirection[i] = -1.0;
                 }
-                if(mFlipper[i])
-                {
-                    mOvershotStart[i] = mFinish[i];
-                    mFinish[i] -= mDecelerationDistance[i];
-                }
-                else
-                {
-                    mOvershotStart[i] = mStart[i];
-                    mStart[i] += mDecelerationDistance[i];
-                }
-                mDecelerationTime[i] = mVelocity[i]/fabs(mAcceleration[i]);
-                mAccelerationTime[i] = mDecelerationTime[i];
-                mSecondAccelDistance[i] = 0.5*mAcceleration[i]*mDecelerationTime[i]*mDecelerationTime[i];
-                mFinishTime[i] = mDecelerationTime[i]*2 +
-                        (fabs(mSecondDistance[i])-fabs(mSecondAccelDistance[i]*2))/mVelocity[i];
-                mTotalTime[i] = mFinishTime[i] + mOvershotTime[i];
-                if(mInitialVelocity[i] >= 0)
-                    mVelocity[i] *= -1;
-                mOvershotInitialVelocity[i] = mInitialVelocity[i];
-                mInitialVelocity[i] = 0;
-                mOvershotAcceleration[i] = mAcceleration[i];
-                mAcceleration[i] *= -1;
             }
-            else
-                mOvershoot[i] = false;
-        } else{
-            mAccelerationTime[i] = 0.0;
-            mDecelerationTime[i] = 0.0;
-            mFinishTime[i] = 0.0;
-        }
-        // changes variables back to their initial states in order to flip the graph in the evaluation
-        if(mFlipper[i]){
-            double temp = mStart[i];
-            mStart[i] = mFinish[i];
-            mFinish[i] = temp;
-            mAcceleration[i] *= -1;
-            if(!mOvershoot[i])
-                mVelocity[i] *= -1;
-            mInitialVelocity[i] *= -1;
+            // update displacement
+            displacement = mFinish[i] - (mStart[i] + mOvershotDistance[i]);
+
+            // plan trajectory from the overshot point
+
+            // calculates the max velocity that the velocity will hit (may be lower than predetermined)
+            const double peakVelocity = sqrt((2.0 * mAcceleration[i] * displacement * mOvershotDirection[i]
+                                              + mOvershotInitialVelocity[i] * mOvershotInitialVelocity[i])
+                                             / 2.0);
+            // detect case where we don't have time to reach max velocity
+            if (peakVelocity < mVelocity[i]) {
+                mVelocity[i] = peakVelocity;
+            }
+
+            // calculates default times and distances if we reached constant velocity
+            mAccelerationTime[i] = (mVelocity[i] - mOvershotInitialVelocity[i]) / mAcceleration[i];
+            mDecelerationTime[i] = mVelocity[i] / mAcceleration[i];
+            mAccelerationDistance[i] =
+                    mOvershotInitialVelocity[i] * mAccelerationTime[i]
+                    + 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i];
+            mDecelerationDistance[i] =
+                    0.5 * mAcceleration[i] * mDecelerationTime[i] * mDecelerationTime[i];
+
+            // calculates the finish time for a movement that reaches a constant velocity
+            mFinishTime[i] =
+                    mOvershotTime[i]
+                    + (displacement - mAccelerationDistance[i] - mDecelerationDistance[i]) / mVelocity[i] // Constant velocity phase
+                    + mAccelerationTime[i]
+                    + mDecelerationTime[i];
         }
     }
+
     // compute max time
-    mDuration = mTotalTime.MaxElement();
+    mDuration = mFinishTime.MaxElement();
     // scale time to all arrive at same time
     if (mCoordination == LSPB_DURATION) {
         mTimeScale.SetSize(mDimension);
         if (mDuration > 0) {
-            mTimeScale.RatioOf(mTotalTime, mDuration);
+            mTimeScale.RatioOf(mFinishTime, mDuration);
         } else {
             mTimeScale.SetAll(1.0);
         }
@@ -264,9 +214,9 @@ void robLSPB::Evaluate(const double absoluteTime,
         }
         const double time2 = dimTime * dimTime;
         if (time <= 0) {
-            position.ForceAssign(mOvershotStart);
-            velocity.ForceAssign(mOvershotInitialVelocity);
-            acceleration.Zeros();
+            velocity[i] = mInitialVelocity[i];
+            position[i] = mStart[i] + mInitialVelocity[i] * time;
+            acceleration[i] = 0;
             return;
         }
         if (dimTime >= mFinishTime[i]) {
@@ -276,10 +226,10 @@ void robLSPB::Evaluate(const double absoluteTime,
         else if(dimTime <= 0){
             // immediate deceleration phase to overshoot the desired position
             position[i] =
-                    mOvershotStart[i] + mOvershotInitialVelocity[i]*(dimTime + mOvershotTime[i]) - 0.5*mOvershotAcceleration[i]*(dimTime + mOvershotTime[i])*(dimTime + mOvershotTime[i]);
+                    mStart[i] + mOvershotDistance[i] + mOvershotInitialVelocity[i]*(dimTime + mOvershotTime[i]) - 0.5*mAcceleration[i]*(dimTime + mOvershotTime[i])*(dimTime + mOvershotTime[i]);
             velocity[i] =
-                    mOvershotInitialVelocity[i] - mOvershotAcceleration[i] * (dimTime + mOvershotTime[i]);
-            acceleration[i] = -fabs(mOvershotAcceleration[i]);
+                    mOvershotInitialVelocity[i] - mAcceleration[i] * (dimTime + mOvershotTime[i]);
+            acceleration[i] = -fabs(mAcceleration[i]);
         }
         else if (dimTime <= mAccelerationTime[i]){
             // acceleration phase
