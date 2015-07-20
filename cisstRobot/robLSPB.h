@@ -80,7 +80,8 @@ class CISST_EXPORT robLSPB {
         mOvershotDirection, // direction after overshot: -1.0 or 1.0.  -1.0 for trajectory past finish point, i.e. going back
         mAccelerationDistance,
         mDecelerationDistance,
-        mOvershotDistance, // position reached at end of overshoot
+        mOvershotDistance, // displacement over an overshoot
+        mOvershotStart, // starting point after overshot
         mDirection;
 
  public:

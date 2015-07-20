@@ -65,6 +65,7 @@ void robLSPB::Set(const vctDoubleVec & start,
     mSecondDistance.SetSize(mDimension);//Total distance of a trajectory after an overshoot
     mOvershotTime.SetSize(mDimension);//Time of Overshoot
     mOvershotTime.Zeros();
+    mOvershotDistance.SetSize(mDimension);
     mAccelerationDistance.SetSize(mDimension);
     mDecelerationDistance.SetSize(mDimension);
     mAccelerationDistance.Zeros();
@@ -73,6 +74,7 @@ void robLSPB::Set(const vctDoubleVec & start,
     mOvershotInitialVelocity.SetSize(mDimension);
     mOvershotDirection.SetSize(mDimension);
     mOvershotInitialVelocity.SetSize(mDimension);
+    mOvershotStart.SetSize(mDimension);
 
     // compute trajectory parameters
     for (size_t i = 0;
@@ -111,22 +113,22 @@ void robLSPB::Set(const vctDoubleVec & start,
                 mOvershotDirection[i] = 1.0;
             } else {
                 mOvershotTime[i] = mInitialVelocity[i] / mAcceleration[i];
-                mOvershotDistance[i] = mStart[i]
-                        + mInitialVelocity[i] * mOvershotTime[i]
-                        + 0.5 * mAcceleration[i]* mOvershotTime[i] * mOvershotTime[i];
+                mOvershotDistance[i] =
+                        0.5 * mAcceleration[i] * mOvershotTime[i] * mOvershotTime[i];
                 // test if this is really an overshot
                 if (mOvershotDistance[i] <= mFinish[i]) {
                     // test if we start with an initial velocity too high and we need to deccelerate
                     if (mInitialVelocity[i] > mVelocity[i]) {
                         mOvershotTime[i] = (mInitialVelocity[i] - mVelocity[i]) / mAcceleration[i];
-                        mOvershotDistance[i] =
-                                0.5 * mAcceleration[i]* mOvershotTime[i] * mOvershotTime[i];
+                        mOvershotDistance[i] = mInitialVelocity[i] * mOvershotTime[i]
+                                 - 0.5 * mAcceleration[i] * mOvershotTime[i] * mOvershotTime[i];
+                        std::cout<<mOvershotDistance[i]<<" OvershotDist "<<mOvershotTime[i]<<" OvershotTime\n";
                         mOvershotInitialVelocity[i] = mVelocity[i];
                         mOvershotDirection[i] = 1.0;
                     } else {
                         // really not an overshot
-                        mOvershotTime[i] = mStartTime;
-                        mOvershotDistance[i] = mStart[i];
+                        mOvershotTime[i] = 0;
+                        mOvershotDistance[i] = 0;
                         mOvershotInitialVelocity[i] = mInitialVelocity[i];
                         mOvershotDirection[i] = 1.0;
                     }
@@ -137,11 +139,10 @@ void robLSPB::Set(const vctDoubleVec & start,
                     mOvershotDirection[i] = -1.0;
                 }
             }
-            // update displacement
+            std::cout<<"OD "<<mOvershotDistance[i]<<"\n";
+            mOvershotStart[i] = mStart[i] + mOvershotDistance[i];
             displacement = mFinish[i] - (mStart[i] + mOvershotDistance[i]);
-
             // plan trajectory from the overshot point
-
             // calculates the max velocity that the velocity will hit (may be lower than predetermined)
             const double peakVelocity = sqrt((2.0 * mAcceleration[i] * displacement * mOvershotDirection[i]
                                               + mOvershotInitialVelocity[i] * mOvershotInitialVelocity[i])
@@ -159,8 +160,10 @@ void robLSPB::Set(const vctDoubleVec & start,
                     + 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i];
             mDecelerationDistance[i] =
                     0.5 * mAcceleration[i] * mDecelerationTime[i] * mDecelerationTime[i];
-
+            std::cout<<"AT,DT,AD,DD "<<mAccelerationTime[i]<<" "<<mDecelerationTime[i]<<" "<<mAccelerationDistance[i]<<" "<<mDecelerationDistance[i]<<"\n";
             // calculates the finish time for a movement that reaches a constant velocity
+            std::cout<<"Displacement "<<displacement<<"\n";
+            std::cout<<"Const Phase "<<(displacement - mAccelerationDistance[i] - mDecelerationDistance[i] - mOvershotDistance[i]) / mVelocity[i]<<"\n";
             mFinishTime[i] =
                     mOvershotTime[i]
                     + (displacement - mAccelerationDistance[i] - mDecelerationDistance[i]) / mVelocity[i] // Constant velocity phase
@@ -208,9 +211,9 @@ void robLSPB::Evaluate(const double absoluteTime,
         const double time = absoluteTime - mStartTime;
         double dimTime;
         if (mCoordination == LSPB_DURATION) {
-            dimTime = time * mTimeScale[i] - mOvershotTime[i];
+            dimTime = time * mTimeScale[i];
         } else {
-            dimTime = time - mOvershotTime[i];
+            dimTime = time;
         }
         const double time2 = dimTime * dimTime;
         if (time <= 0) {
@@ -223,53 +226,38 @@ void robLSPB::Evaluate(const double absoluteTime,
             position[i] = mFinish[i];
             velocity[i] = 0.0;
             acceleration[i] = 0.0;}
-        else if(dimTime <= 0){
+        else if(dimTime <= mOvershotTime[i]){
             // immediate deceleration phase to overshoot the desired position
+            std::cout<<"dimTime "<<dimTime<<" Pos:"<<position[i]<<" mOvershotTime "<<mOvershotTime[i]<<" Overshooting\n";
             position[i] =
-                    mStart[i] + mOvershotDistance[i] + mOvershotInitialVelocity[i]*(dimTime + mOvershotTime[i]) - 0.5*mAcceleration[i]*(dimTime + mOvershotTime[i])*(dimTime + mOvershotTime[i]);
+                    mStart[i] + mInitialVelocity[i]*dimTime - 0.5*mAcceleration[i]*time2;
             velocity[i] =
-                    mOvershotInitialVelocity[i] - mAcceleration[i] * (dimTime + mOvershotTime[i]);
+                    mInitialVelocity[i] - mAcceleration[i] * dimTime;
             acceleration[i] = -fabs(mAcceleration[i]);
         }
         else if (dimTime <= mAccelerationTime[i]){
             // acceleration phase
-            position[i] = mStart[i] + mInitialVelocity[i]*dimTime + 0.5*mAcceleration[i]*time2;
-            velocity[i] = mAcceleration[i] * dimTime + mInitialVelocity[i];
+            std::cout<<"ACCELERATING dimTime "<<dimTime<<" Pos:"<<position[i]<<"\n";
+            position[i] = mOvershotStart[i] + mOvershotInitialVelocity[i]*dimTime + 0.5*mAcceleration[i]*time2;
+            velocity[i] = mAcceleration[i] * dimTime + mOvershotInitialVelocity[i];
             acceleration[i] = fabs(mAcceleration[i]);
-        } else if (dimTime >= (mFinishTime[i] - mDecelerationTime[i])|| -dimTime > mAccelerationTime[i]) {
+        } else if (dimTime >= (mFinishTime[i] - mDecelerationTime[i])) {
             // deceleration phase
-
-            // deceleration when the max velocity is lower than the initial velocity
-            if(-dimTime > mAccelerationTime[i])
-            {
-                position[i] =
-                        mStart[i] + mInitialVelocity[i]*dimTime - 0.5*mAcceleration[i]*time2;
-                velocity[i] =
-                        mInitialVelocity[i] - mAcceleration[i] * dimTime;
-            }
-            // regular deceleration phase
-            else
-            {
-                position[i] =
-                        mFinish[i]
-                        - 0.5 * mAcceleration[i] * mFinishTime[i] * mFinishTime[i]
-                        + mAcceleration[i] * mFinishTime[i] * dimTime
-                        - 0.5 * mAcceleration[i] * time2;
-                velocity[i] =
-                        mAcceleration[i] * mFinishTime[i]
-                        - mAcceleration[i] * dimTime;
-            }
+            std::cout<<"DECELERATING dimTime "<<dimTime<<" Pos:"<<position[i]<<"\n";
+            position[i] =
+                    mFinish[i]
+                    - 0.5 * mAcceleration[i] * mFinishTime[i] * mFinishTime[i]
+                    + mAcceleration[i] * mFinishTime[i] * dimTime
+                    - 0.5 * mAcceleration[i] * time2;
+            velocity[i] =
+                    mAcceleration[i] * mFinishTime[i]
+                    - mAcceleration[i] * dimTime;
             acceleration[i] = -fabs(mAcceleration[i]);
         } else {
+            std::cout<<"CONSTANT| dimTime "<<dimTime<<" Pos:"<<position[i]<<"\n";
             // constant velocity phase
-            // checks if initial velocity is greater than the max velocity and has not overshot
-            if((mAcceleration[i] > 0 && mInitialVelocity[i] > 0 && mInitialVelocity[i] > mVelocity[i]) || (mAcceleration[i] < 0 && mInitialVelocity[i] < 0 && fabs(mInitialVelocity[i]) > fabs(mVelocity[i])))
-                position[i] = -0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
-                        + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(dimTime - fabs(mAccelerationTime[i]));
-            else
-                position[i] = 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i] + mStart[i]
-                        + mInitialVelocity[i]*fabs(mAccelerationTime[i]) + mVelocity[i]*(dimTime - fabs(mAccelerationTime[i]));
-
+            std::cout<<"in here\n";
+            position[i] = mAccelerationDistance[i] + mOvershotStart[i] + mVelocity[i] * (dimTime - mAccelerationTime[i] - mOvershotTime[i]);
             velocity[i] = mVelocity[i];
             acceleration[i] = 0.0;
         }
