@@ -34,10 +34,15 @@ class robLSPBTest : public CppUnit::TestFixture
         CPPUNIT_TEST(PositiveViPositiveOvershotPlateau);
         CPPUNIT_TEST(PositiveViNegativeOvershot);
         CPPUNIT_TEST(PositiveViNegativeOvershotPlateau);
+
         CPPUNIT_TEST(NegativeViZero);
         CPPUNIT_TEST(NegativeViZeroPlateau);
-        CPPUNIT_TEST(NegativeViPositive);
-        CPPUNIT_TEST(NegativeViPositivePlateau);
+        CPPUNIT_TEST(NegativeViNegative);
+        CPPUNIT_TEST(NegativeViNegativePlateau);
+        CPPUNIT_TEST(NegativeViNegativeOvershot);
+        CPPUNIT_TEST(NegativeViNegativeOvershotPlateau);
+        CPPUNIT_TEST(NegativeViPositiveOvershot);
+        CPPUNIT_TEST(NegativeViPositiveOvershotPlateau);
     }
     CPPUNIT_TEST_SUITE_END();
     
@@ -56,10 +61,15 @@ class robLSPBTest : public CppUnit::TestFixture
     void PositiveViPositiveOvershotPlateau(void);
     void PositiveViNegativeOvershot(void);
     void PositiveViNegativeOvershotPlateau(void);
+
     void NegativeViZero(void);
     void NegativeViZeroPlateau(void);
-    void NegativeViPositive(void);
-    void NegativeViPositivePlateau(void);
+    void NegativeViNegative(void);
+    void NegativeViNegativePlateau(void);
+    void NegativeViNegativeOvershot(void);
+    void NegativeViNegativeOvershotPlateau(void);
+    void NegativeViPositiveOvershot(void);
+    void NegativeViPositiveOvershotPlateau(void);
 
  protected:
 

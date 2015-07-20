@@ -368,7 +368,83 @@ void robLSPBTest::NegativeViZeroPlateau(void)
     TestContinuity(trajectory);
 }
 
-void robLSPBTest::NegativeViPositive(void)
+void robLSPBTest::NegativeViNegative(void)
+{
+    SetDimension(1);
+    mStart[0] = 10.0;
+    mFinish[0] = 2.0;
+    mMaxVelocity[0] = 200.0;
+    mMaxAcceleration[0] = 2.0;
+    mInitialVelocity[0] = -1.0;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    Log(trajectory, "NegativeViNegative");
+    TestContinuity(trajectory);
+}
+
+void robLSPBTest::NegativeViNegativePlateau(void)
+{
+    SetDimension(1);
+    mStart[0] = 10.0;
+    mFinish[0] = 2.0;
+    mMaxVelocity[0] = 2.0;
+    mMaxAcceleration[0] = 2.0;
+    mInitialVelocity[0] = -1.0;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    Log(trajectory, "NegativeViNegativePlateau");
+    TestContinuity(trajectory);
+}
+
+void robLSPBTest::NegativeViNegativeOvershot(void)
+{
+    SetDimension(1);
+    mStart[0] = 4.0;
+    mFinish[0] = 3.0;
+    mMaxVelocity[0] = 8.0;
+    mMaxAcceleration[0] = 2.0;
+    mInitialVelocity[0] = -5.0;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    Log(trajectory, "NegativeViNegativeOvershot");
+    TestContinuity(trajectory);
+}
+
+void robLSPBTest::NegativeViNegativeOvershotPlateau(void)
+{
+    SetDimension(1);
+    mStart[0] = 5.0;
+    mFinish[0] = 3.0;
+    mMaxVelocity[0] = 2.0;
+    mMaxAcceleration[0] = 2.0;
+    mInitialVelocity[0] = -8.0;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    Log(trajectory, "NegativeViNegativeOvershotPlateau");
+    TestContinuity(trajectory);
+}
+
+void robLSPBTest::NegativeViPositiveOvershot(void)
 {
     SetDimension(1);
     mStart[0] = 10.0;
@@ -383,11 +459,11 @@ void robLSPBTest::NegativeViPositive(void)
                    mMaxVelocity, mMaxAcceleration,mInitialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    Log(trajectory, "NegativeViPositive");
+    Log(trajectory, "NegativeViPositiveOvershot");
     TestContinuity(trajectory);
 }
 
-void robLSPBTest::NegativeViPositivePlateau(void)
+void robLSPBTest::NegativeViPositiveOvershotPlateau(void)
 {
     SetDimension(1);
     mStart[0] = 10.0;
@@ -402,6 +478,6 @@ void robLSPBTest::NegativeViPositivePlateau(void)
                    mMaxVelocity, mMaxAcceleration,mInitialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    Log(trajectory, "NegativeViPositivePlateau");
+    Log(trajectory, "NegativeViPositiveOvershotPlateau");
     TestContinuity(trajectory);
 }
