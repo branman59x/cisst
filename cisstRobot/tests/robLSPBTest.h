@@ -26,12 +26,18 @@ class robLSPBTest : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE(robLSPBTest);
     {
+        CPPUNIT_TEST(PositiveViZero);
+        CPPUNIT_TEST(PositiveViZeroPlateau);
+        CPPUNIT_TEST(PositiveViPositive);
+        CPPUNIT_TEST(PositiveViPositivePlateau);
         CPPUNIT_TEST(PositiveViPositiveOvershot);
         CPPUNIT_TEST(PositiveViPositiveOvershotPlateau);
-        CPPUNIT_TEST(Test3);
-        CPPUNIT_TEST(Test4);
-        CPPUNIT_TEST(Test5);
-        CPPUNIT_TEST(Test6);
+        CPPUNIT_TEST(PositiveViNegativeOvershot);
+        CPPUNIT_TEST(PositiveViNegativeOvershotPlateau);
+        CPPUNIT_TEST(NegativeViZero);
+        CPPUNIT_TEST(NegativeViZeroPlateau);
+        CPPUNIT_TEST(NegativeViPositive);
+        CPPUNIT_TEST(NegativeViPositivePlateau);
     }
     CPPUNIT_TEST_SUITE_END();
     
@@ -42,12 +48,18 @@ class robLSPBTest : public CppUnit::TestFixture
     void tearDown(void) {
     }
     
+    void PositiveViZero(void);
+    void PositiveViZeroPlateau(void);
+    void PositiveViPositive(void);
+    void PositiveViPositivePlateau(void);
     void PositiveViPositiveOvershot(void);
     void PositiveViPositiveOvershotPlateau(void);
-    void Test3(void);
-    void Test4(void);
-    void Test5(void);
-    void Test6(void);
+    void PositiveViNegativeOvershot(void);
+    void PositiveViNegativeOvershotPlateau(void);
+    void NegativeViZero(void);
+    void NegativeViZeroPlateau(void);
+    void NegativeViPositive(void);
+    void NegativeViPositivePlateau(void);
 
  protected:
 

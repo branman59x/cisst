@@ -72,6 +72,7 @@ class CISST_EXPORT robLSPB {
         mFinishTime,
         mTimeScale,
         mInitialVelocity,
+        mInitialDirection,
         mSecondDistance,
         mSecondAccelTime,
         mSecondAccelDistance,

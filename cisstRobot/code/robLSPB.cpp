@@ -4,12 +4,15 @@
 /*
   Author(s):  Anton Deguet, Brandon Cohen
   Created on: 2014-10-27
-  (C) Copyright 2014 Johns Hopkins University (JHU), All Rights Reserved.
+
+(C) Copyright 2014 Johns Hopkins University (JHU), All Rights Reserved.
+
 --- begin cisst license - do not edit ---
 This software is provided "as is" under an open source license, with
 no warranty.  The complete license can be found in license.txt and
 http://www.cisst.org/cisst/license.txt.
 --- end cisst license ---
+
 */
 
 #include <cisstRobot/robLSPB.h>
@@ -61,6 +64,8 @@ void robLSPB::Set(const vctDoubleVec & start,
     mDecelerationTime.SetSize(mDimension);
     mFinishTime.SetSize(mDimension);
     mInitialVelocity.ForceAssign(initialVelocity);
+    mInitialDirection.SetSize(mDimension);
+    mInitialDirection.SetAll(1.0);
     mSecondAccelDistance.SetSize(mDimension);//Distance of Acceleration of a trajectory after an overshoot
     mSecondDistance.SetSize(mDimension);//Total distance of a trajectory after an overshoot
     mOvershotTime.SetSize(mDimension);//Time of Overshoot
@@ -85,10 +90,7 @@ void robLSPB::Set(const vctDoubleVec & start,
         if (displacement < 0.0) {
             // sets variables so that the graph will flip as if the displacement was positive
             mDirection[i] = -1.0;
-            mInitialVelocity[i] *= -1.0;
-            displacement *= -1.0;
-            mStart[i] *= -1.0;
-            mFinish[i] *= -1.0;
+            mInitialVelocity *= -1.0;
         } else {
             mDirection[i] = 1.0;
             if (displacement == 0 && mInitialVelocity[i] == 0) {
@@ -106,11 +108,13 @@ void robLSPB::Set(const vctDoubleVec & start,
             }
             // look for overshoot, first case we are going in wrong direction
             if (mInitialVelocity[i] < 0.0) {
+                mInitialDirection[i] = -1.0;
                 mOvershotTime[i] = -(mInitialVelocity[i] / mAcceleration[i]);
                 mOvershotDistance[i] =
-                        - 0.5 * mAcceleration[i] * mOvershotTime[i] * mOvershotTime[i];
+                        - 0.5 * mAcceleration[i] * mOvershotTime[i] * mOvershotTime[i] * mDirection[i];
                 mOvershotInitialVelocity[i] = 0.0;
                 mOvershotDirection[i] = 1.0;
+                std::cout<<"overshotDistance"<<mOvershotDistance<<"\n";
             } else {
                 mOvershotTime[i] = mInitialVelocity[i] / mAcceleration[i];
                 mOvershotDistance[i] =
@@ -144,9 +148,10 @@ void robLSPB::Set(const vctDoubleVec & start,
             displacement = mFinish[i] - (mStart[i] + mOvershotDistance[i]);
             // plan trajectory from the overshot point
             // calculates the max velocity that the velocity will hit (may be lower than predetermined)
-            const double peakVelocity = sqrt((2.0 * mAcceleration[i] * displacement * mOvershotDirection[i]
+            const double peakVelocity = sqrt((2.0 * mAcceleration[i] * displacement * mOvershotDirection[i] * mDirection[i]
                                               + mOvershotInitialVelocity[i] * mOvershotInitialVelocity[i])
                                              / 2.0);
+            std::cout<<"peakVelocity "<< peakVelocity<<"\n";
             // detect case where we don't have time to reach max velocity
             if (peakVelocity < mVelocity[i]) {
                 mVelocity[i] = peakVelocity;
@@ -221,13 +226,12 @@ void robLSPB::Evaluate(const double absoluteTime,
         // before trajectory
         if (time <= 0) {
             velocity[i] = mInitialVelocity[i];
-            position[i] = mStart[i] + mInitialVelocity[i] * time;
+            position[i] = mStart[i] + mInitialDirection[i] * mInitialVelocity[i] * dimTime;
             acceleration[i] = 0;
-            return;
         }
 
         // after trajectory
-        if (dimTime >= mFinishTime[i]) {
+        else if (dimTime >= mFinishTime[i]) {
             position[i] = mFinish[i];
             velocity[i] = 0.0;
             acceleration[i] = 0.0;
@@ -235,15 +239,18 @@ void robLSPB::Evaluate(const double absoluteTime,
 
         // immediate deceleration phase to overshoot the desired position
         else if (dimTime <= mOvershotTime[i]) {
+            std::cout<<"Overshooting\n";
             const double overshotTime = time * mTimeScale[i];
             position[i] =
                     mStart[i]
-                    + mInitialVelocity[i] * overshotTime
-                    - 0.5 * mAcceleration[i] * overshotTime * overshotTime;
+                    + mDirection[i]
+                    * (mInitialVelocity[i] * overshotTime
+                      + mInitialDirection[i]
+                      * (-0.5 * mAcceleration[i] * overshotTime * overshotTime));
             velocity[i] =
                     mInitialVelocity[i]
-                    - mAcceleration[i] * overshotTime;
-            acceleration[i] = - mAcceleration[i];
+                    - mInitialDirection[i] * mAcceleration[i] * overshotTime;
+            acceleration[i] = - mInitialDirection[i] * mAcceleration[i];
         }
 
         // acceleration phase
@@ -252,8 +259,9 @@ void robLSPB::Evaluate(const double absoluteTime,
             const double accelerationTime = (time - mOvershotTime[i]) * mTimeScale[i];
             position[i] =
                     mOvershotStart[i]
-                    + mOvershotInitialVelocity[i] * accelerationTime
-                    - 0.5 * mAcceleration[i] * accelerationTime * accelerationTime;
+                    + mOvershotDirection[i] * mDirection[i]
+                    * (mOvershotInitialVelocity[i] * accelerationTime
+                       + 0.5 * mAcceleration[i] * accelerationTime * accelerationTime);
             velocity[i] =
                     mOvershotDirection[i]
                     * (mOvershotInitialVelocity[i]
@@ -268,7 +276,7 @@ void robLSPB::Evaluate(const double absoluteTime,
             std::cout<<"DECELERATING dimTime "<<dimTime<<" Pos:"<<position[i]<<"\n";
             position[i] =
                     mFinish[i]
-                    + mOvershotDirection[i]
+                    + mOvershotDirection[i] * mDirection[i]
                     * (- 0.5 * mAcceleration[i] * mFinishTime[i] * mFinishTime[i]
                        + mAcceleration[i] * mFinishTime[i] * dimTime
                        - 0.5 * mAcceleration[i] * time2);
@@ -287,8 +295,8 @@ void robLSPB::Evaluate(const double absoluteTime,
             const double constantTime = (time - (mAccelerationTime[i] + mOvershotTime[i])) * mTimeScale[i];
             position[i] =
                     mOvershotStart[i]
-                    + mOvershotDirection[i]
-                    * (mAccelerationTime[i]
+                    + mOvershotDirection[i] * mDirection[i]
+                    * (mAccelerationDistance[i]
                        + mVelocity[i] * constantTime);
             velocity[i] = mOvershotDirection[i] * mVelocity[i];
             acceleration[i] = 0.0;
@@ -298,6 +306,8 @@ void robLSPB::Evaluate(const double absoluteTime,
             velocity[i] *= mTimeScale[i];
             acceleration[i] *= (mTimeScale[i] * mTimeScale[i]);
         }
+        velocity *= mDirection[i];
+        acceleration *= mDirection[i];
     }
 }
 
