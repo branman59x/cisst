@@ -26,8 +26,8 @@ class robLSPBTest : public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE(robLSPBTest);
     {
-        CPPUNIT_TEST(Test1);
-        CPPUNIT_TEST(Test2);
+        CPPUNIT_TEST(PositiveViPositiveOvershot);
+        CPPUNIT_TEST(PositiveViPositiveOvershotPlateau);
         CPPUNIT_TEST(Test3);
         CPPUNIT_TEST(Test4);
         CPPUNIT_TEST(Test5);
@@ -42,8 +42,8 @@ class robLSPBTest : public CppUnit::TestFixture
     void tearDown(void) {
     }
     
-    void Test1(void);
-    void Test2(void);
+    void PositiveViPositiveOvershot(void);
+    void PositiveViPositiveOvershotPlateau(void);
     void Test3(void);
     void Test4(void);
     void Test5(void);

@@ -176,12 +176,13 @@ void robLSPBTest::TestContinuity(const robLSPB & trajectory)
 }
 
 
-void robLSPBTest::Test1(void)
+void robLSPBTest::PositiveViPositiveOvershot(void)
 {
     SetDimension(1);
-    mStart[0] = 0.0;
-    mFinish[0] = 10.0;
-    mMaxVelocity[0] = 10.0;
+
+    mStart[0] = 3.0;
+    mFinish[0] = 4.0;
+    mMaxVelocity[0] = 8.0;
     mMaxAcceleration[0] = 2.0;
     mInitialVelocity[0] = 5.0;
 
@@ -191,24 +192,18 @@ void robLSPBTest::Test1(void)
                    mMaxVelocity, mMaxAcceleration,mInitialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    Log(trajectory, "Test1");
+    Log(trajectory, "PositiveViPositiveOvershot");
     TestContinuity(trajectory);
 }
 
-void robLSPBTest::Test2(void)
+void robLSPBTest::PositiveViPositiveOvershotPlateau(void)
 {
     SetDimension(1);
-    mStart[0] = 3;
-    mFinish[0] = 5;
-    mMaxVelocity[0] = 5;
+    mStart[0] = 3.0;
+    mFinish[0] = 5.0;
+    mMaxVelocity[0] = 2.0;
     mMaxAcceleration[0] = 2.0;
-    mInitialVelocity[0] = 4.0;
-
-//    mStart[0] = 0;
-//    mFinish[0] = 10;
-//    mMaxVelocity[0] = 4;
-//    mMaxAcceleration[0] = 1;
-//    mInitialVelocity[0] = 5;
+    mInitialVelocity[0] = 8.0;
 
     const double startTime = 2.0;
     robLSPB trajectory;
@@ -216,7 +211,7 @@ void robLSPBTest::Test2(void)
                    mMaxVelocity, mMaxAcceleration,mInitialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    Log(trajectory, "Test2");
+    Log(trajectory, "PositiveViPositiveOvershotPlateau");
     TestContinuity(trajectory);
 }
 
