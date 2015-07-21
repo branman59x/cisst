@@ -5,7 +5,7 @@
   Author(s):  Anton Deguet, Brandon Cohen
   Created on: 2014-10-27
 
-(C) Copyright 2014 Johns Hopkins University (JHU), All Rights Reserved.
+(C) Copyright 2014-2015 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
 This software is provided "as is" under an open source license, with
@@ -233,7 +233,7 @@ void robLSPB::Evaluate(const double absoluteTime,
 
         // immediate deceleration phase to overshoot the desired position
         else if (dimTime <= mOvershotTime[i]) {
-            const double overshotTime = time * mTimeScale[i];
+            const double overshotTime = dimTime;
             position[i] =
                     mStart[i]
                     + mInitialVelocity[i] * overshotTime
@@ -247,7 +247,7 @@ void robLSPB::Evaluate(const double absoluteTime,
 
         // acceleration phase
         else if (dimTime <= mAccelerationTime[i] + mOvershotTime[i]) {
-            const double accelerationTime = (time - mOvershotTime[i]) * mTimeScale[i];
+            const double accelerationTime = (dimTime - mOvershotTime[i]);
             position[i] =
                     mOvershotStart[i]
                     + mOvershotInitialVelocity[i] * accelerationTime
@@ -276,7 +276,7 @@ void robLSPB::Evaluate(const double absoluteTime,
 
         // constant velocity
         else {
-            const double constantTime = (time - (mAccelerationTime[i] + mOvershotTime[i])) * mTimeScale[i];
+            const double constantTime = (dimTime - (mAccelerationTime[i] + mOvershotTime[i]));
             position[i] =
                     mOvershotStart[i]
                     + mOvershotDirection[i]

@@ -2,8 +2,8 @@
 /* ex: set filetype=cpp softtabstop=4 shiftwidth=4 tabstop=4 cindent expandtab: */
 
 /*
-  Author(s):  Anton Deguet
-  Created on: 2014-07-14
+  Author(s):  Anton Deguet, Brandon Cohen
+  Created on: 2015-07-14
   
   (C) Copyright 2015 Johns Hopkins University (JHU), All Rights Reserved.
 
@@ -32,7 +32,6 @@ class robLSPBTest : public CppUnit::TestFixture
         CPPUNIT_TEST(PositiveViPositivePlateau);
         CPPUNIT_TEST(PositiveViAbove);
         CPPUNIT_TEST(PositiveViAbovePlateau);
-
         CPPUNIT_TEST(PositiveViPositiveOvershot);
         CPPUNIT_TEST(PositiveViPositiveOvershotPlateau);
         CPPUNIT_TEST(PositiveViNegativeOvershot);
@@ -44,11 +43,12 @@ class robLSPBTest : public CppUnit::TestFixture
         CPPUNIT_TEST(NegativeViNegativePlateau);
         CPPUNIT_TEST(NegativeViBelow);
         CPPUNIT_TEST(NegativeViBelowPlateau);
-
         CPPUNIT_TEST(NegativeViNegativeOvershot);
         CPPUNIT_TEST(NegativeViNegativeOvershotPlateau);
         CPPUNIT_TEST(NegativeViPositiveOvershot);
         CPPUNIT_TEST(NegativeViPositiveOvershotPlateau);
+
+        CPPUNIT_TEST(MultipleJoints);
     }
     CPPUNIT_TEST_SUITE_END();
     
@@ -65,7 +65,6 @@ class robLSPBTest : public CppUnit::TestFixture
     void PositiveViPositivePlateau(void);
     void PositiveViAbove(void);
     void PositiveViAbovePlateau(void);
-
     void PositiveViPositiveOvershot(void);
     void PositiveViPositiveOvershotPlateau(void);
     void PositiveViNegativeOvershot(void);
@@ -77,11 +76,12 @@ class robLSPBTest : public CppUnit::TestFixture
     void NegativeViNegativePlateau(void);
     void NegativeViBelow(void);
     void NegativeViBelowPlateau(void);
-
     void NegativeViNegativeOvershot(void);
     void NegativeViNegativeOvershotPlateau(void);
     void NegativeViPositiveOvershot(void);
     void NegativeViPositiveOvershotPlateau(void);
+
+    void MultipleJoints(void);
 
  protected:
 
@@ -108,4 +108,3 @@ class robLSPBTest : public CppUnit::TestFixture
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(robLSPBTest);
-
