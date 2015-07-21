@@ -162,21 +162,21 @@ void robLSPB::Set(const vctDoubleVec & start,
             }
 
             // calculates default times and distances if we reached constant velocity
-            mAccelerationTime[i] = (mVelocity[i] - mOvershotInitialVelocity[i]) / mAcceleration[i];
+            mAccelerationTime[i] = (mVelocity[i] - fabs(mOvershotInitialVelocity[i])) / mAcceleration[i];
             std::cout << "Acceleration time " << mAccelerationTime[i] << std::endl;
             mDecelerationTime[i] = mVelocity[i] / mAcceleration[i];
             mAccelerationDistance[i] =
-                    mOvershotInitialVelocity[i] * mAccelerationTime[i]
+                    fabs(mOvershotInitialVelocity[i]) * mAccelerationTime[i]
                     + 0.5 * mAcceleration[i] * mAccelerationTime[i] * mAccelerationTime[i];
             mDecelerationDistance[i] =
                     0.5 * mAcceleration[i] * mDecelerationTime[i] * mDecelerationTime[i];
             std::cout<<"AT,DT,AD,DD,OD "<<mAccelerationTime[i]<<" "<<mDecelerationTime[i]<<" "<<mAccelerationDistance[i]<<" "<<mDecelerationDistance[i]<<" "<<mOvershotTime[i]<<"\n";
             // calculates the finish time for a movement that reaches a constant velocity
             std::cout<<"Displacement "<<displacement<<"\n";
-            std::cout<<"Const Phase "<<(fabs(displacement) - mAccelerationDistance[i] - mDecelerationDistance[i]) / mVelocity[i]<<"\n";
+            std::cout<<"Const Phase "<<(fabs(displacement) - fabs(mAccelerationDistance[i]) - mDecelerationDistance[i]) / mVelocity[i]<<"\n";
             mFinishTime[i] =
                     mOvershotTime[i]
-                    + (fabs(displacement) - mAccelerationDistance[i] - mDecelerationDistance[i]) / mVelocity[i] // Constant velocity phase
+                    + (fabs(displacement) - fabs(mAccelerationDistance[i]) - mDecelerationDistance[i]) / mVelocity[i] // Constant velocity phase
                     + mAccelerationTime[i]
                     + mDecelerationTime[i];
             std::cout<<"FinishTime "<<mFinishTime[i]<<"\n";
