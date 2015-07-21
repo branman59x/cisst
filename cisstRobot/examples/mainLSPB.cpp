@@ -61,9 +61,9 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 
     start[0] = 10.0;
     finish[0] = 2.0;
-    maxVelocity[0] = 200.0;
+    maxVelocity[0] = 3.0;
     maxAcceleration[0] = 2.0;
-    initialVelocity[0] = -1.0;
+    initialVelocity[0] = -4.0;
 
     const double startTime = 2.0;
 

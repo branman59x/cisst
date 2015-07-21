@@ -123,8 +123,8 @@ void robLSPB::Set(const vctDoubleVec & start,
                 // test if this is really an overshot
                 if (fabs(mOvershotDistance[i]) <= fabs(mFinish[i] - mStart[i])) {
                     // test if we start with an initial velocity too high and we need to deccelerate
-                    if (mInitialVelocity[i] > mVelocity[i]) {
-                        mOvershotTime[i] = (mInitialVelocity[i] - mVelocity[i]) / mAcceleration[i];
+                    if (fabs(mInitialVelocity[i]) > mVelocity[i]) {
+                        mOvershotTime[i] = (fabs(mInitialVelocity[i]) - mVelocity[i]) / mAcceleration[i];
                         mOvershotDistance[i] = mInitialVelocity[i] * mOvershotTime[i]
                                 - 0.5 * mAcceleration[i] * mOvershotTime[i] * mOvershotTime[i] * mInitialDirection[i];
                         std::cout<<mOvershotDistance[i]<<" OvershotDist "<<mOvershotTime[i]<<" OvershotTime\n";
