@@ -254,6 +254,25 @@ void robLSPBTest::PositiveViPositivePlateau(void)
 void robLSPBTest::PositiveViAbove(void)
 {
     SetDimension(1);
+    mStart[0] = 0.0;
+    mFinish[0] = 4.0;
+    mMaxVelocity[0] = 2.0;
+    mMaxAcceleration[0] = 1.0;
+    mInitialVelocity[0] = 2.0;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    Log(trajectory, "PositiveViAbove");
+    TestContinuity(trajectory);
+}
+
+void robLSPBTest::PositiveViAbovePlateau(void)
+{
+    SetDimension(1);
     mStart[0] = 2;
     mFinish[0] = 10;
     mMaxVelocity[0] = 3.0;
@@ -266,7 +285,7 @@ void robLSPBTest::PositiveViAbove(void)
                    mMaxVelocity, mMaxAcceleration,mInitialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    Log(trajectory, "PositiveViAbove");
+    Log(trajectory, "PositiveViAbovePlateau");
     TestContinuity(trajectory);
 }
 
@@ -428,6 +447,25 @@ void robLSPBTest::NegativeViNegativePlateau(void)
 void robLSPBTest::NegativeViBelow(void)
 {
     SetDimension(1);
+    mStart[0] = 4.0;
+    mFinish[0] = 0.0;
+    mMaxVelocity[0] = 2.0;
+    mMaxAcceleration[0] = 1.0;
+    mInitialVelocity[0] = -2.0;
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,mInitialVelocity,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    Log(trajectory, "NegativeViBelow");
+    TestContinuity(trajectory);
+}
+
+void robLSPBTest::NegativeViBelowPlateau(void)
+{
+    SetDimension(1);
     mStart[0] = 10;
     mFinish[0] = 2;
     mMaxVelocity[0] = 3.0;
@@ -440,7 +478,7 @@ void robLSPBTest::NegativeViBelow(void)
                    mMaxVelocity, mMaxAcceleration,mInitialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
-    Log(trajectory, "NegativeViBelow");
+    Log(trajectory, "NegativeViBelowPlateau");
     TestContinuity(trajectory);
 }
 
