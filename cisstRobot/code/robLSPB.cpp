@@ -29,7 +29,17 @@ robLSPB::robLSPB(const vctDoubleVec & start,
                  const double startTime,
                  const CoordinationType coordination)
 {
-    Set(start, finish, velocity, acceleration,initialVelocity, startTime, coordination);
+    Set(start, finish, velocity, acceleration, initialVelocity, startTime, coordination);
+}
+
+robLSPB::robLSPB(const vctDoubleVec & start,
+                 const vctDoubleVec & finish,
+                 const vctDoubleVec & velocity,
+                 const vctDoubleVec & acceleration,
+                 const double startTime,
+                 const CoordinationType coordination)
+{
+    Set(start, finish, velocity, acceleration, startTime, coordination);
 }
 
 void robLSPB::Set(const vctDoubleVec & start,
@@ -184,6 +194,18 @@ void robLSPB::Set(const vctDoubleVec & start,
         }
     }
     mIsSet = true;
+}
+
+void robLSPB::Set(const vctDoubleVec & start,
+                  const vctDoubleVec & finish,
+                  const vctDoubleVec & velocity,
+                  const vctDoubleVec & acceleration,
+                  const double startTime,
+                  const CoordinationType coordination)
+{
+    vctDoubleVec initialVelocity(start.size());
+    initialVelocity.Zeros();
+    Set(start, finish, velocity, acceleration, initialVelocity, startTime, coordination);
 }
 
 void robLSPB::Evaluate(const double absoluteTime,

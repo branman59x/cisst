@@ -95,6 +95,13 @@ class CISST_EXPORT robLSPB {
             const double startTime = 0.0,
             const CoordinationType coordination = LSPB_NONE);
 
+    robLSPB(const vctDoubleVec & start,
+            const vctDoubleVec & finish,
+            const vctDoubleVec & velocity,
+            const vctDoubleVec & acceleration,
+            const double startTime = 0.0,
+            const CoordinationType coordination = LSPB_NONE);
+
     ~robLSPB() {};
 
     /*!  \brief Set start and finish position as well as desired
@@ -112,6 +119,13 @@ class CISST_EXPORT robLSPB {
              const vctDoubleVec & velocity,
              const vctDoubleVec & acceleration,
              const vctDoubleVec & initialVelocity,
+             const double startTime = 0.0,
+             const CoordinationType coordination = LSPB_NONE);
+
+    void Set(const vctDoubleVec & start,
+             const vctDoubleVec & finish,
+             const vctDoubleVec & velocity,
+             const vctDoubleVec & acceleration,
              const double startTime = 0.0,
              const CoordinationType coordination = LSPB_NONE);
 
