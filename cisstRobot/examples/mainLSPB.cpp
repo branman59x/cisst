@@ -25,7 +25,7 @@ http://www.cisst.org/cisst/license.txt.
 
 int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 {
-    const size_t dimension = 6;
+    const size_t dimension = 7;
     vctDoubleVec
         start,
         finish,
@@ -46,11 +46,11 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 
     // set parameters
 
-    start.Assign(          0.0, 2.0, 3.0, 0.0, 12.0, 3.0);
-    finish.Assign(        10.0, 12.0, 3.0, 10.0, 12.0, 15.0);
-    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
-    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
-    initialVelocity.Assign(0.0, 1.0, 0.0, 5.0, 0.0, -6.0);
+//    start.Assign(          0.0, 2.0, 3.0, 0.0, 12.0, 3.0);
+//    finish.Assign(        10.0, 12.0, 3.0, 10.0, 12.0, 15.0);
+//    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
+//    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
+//    initialVelocity.Assign(0.0, 1.0, 0.0, 5.0, 0.0, -6.0);
 
 //    start[0] = 10;
 //    finish[0] = 10;
@@ -58,11 +58,22 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 //    maxAcceleration[0] = 2;
 //    initialVelocity[0] = 0;
 
-    const double startTime = 2.0;
+//    start.Assign(         10.0, 12.0, 5.0, 0.0, 12.0, 15.0);
+//    finish.Assign(        10.0, 12.0, 5.0, 5.0, 12.0, 15.0);
+//    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
+//    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
+
+    start.Assign( -8.44185e-11,  6.56747e-08,     0.120000 ,     0.00000 ,     0.00000,      0.00000,  6.57879e-08);
+    finish.Assign(-8.44185e-11,  6.56747e-08,    0.0700000,      0.00000,      0.00000,      0.00000,  6.57879e-08);
+    maxVelocity.Assign( 1.57080,      1.57080,     0.200000,      1.57080,      1.57080,      1.57080,      1.57080);
+    maxAcceleration.Assign(1.57080,      1.57080,     0.200000,      1.57080,      1.57080,      1.57080,      1.57080);
+    //initialVelocity.Assign(0.00000,      0.00000,      0.00000,      0.00000,      0.00000,      0.00000,      0.00000);
+
+    const double startTime = 103.963;
 
     robLSPB trajectory;
     trajectory.Set(start, finish,
-                   maxVelocity, maxAcceleration,initialVelocity,
+                   maxVelocity, maxAcceleration,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
     const double duration = trajectory.Duration();

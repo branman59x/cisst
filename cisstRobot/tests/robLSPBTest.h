@@ -4,7 +4,7 @@
 /*
   Author(s):  Anton Deguet, Brandon Cohen
   Created on: 2015-07-14
-  
+
   (C) Copyright 2015 Johns Hopkins University (JHU), All Rights Reserved.
 
 --- begin cisst license - do not edit ---
@@ -15,7 +15,6 @@ http://www.cisst.org/cisst/license.txt.
 
 --- end cisst license ---
 */
-
 
 #include <cppunit/TestCase.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -49,16 +48,17 @@ class robLSPBTest : public CppUnit::TestFixture
         CPPUNIT_TEST(NegativeViPositiveOvershotPlateau);
 
         CPPUNIT_TEST(MultipleJoints);
+        CPPUNIT_TEST(MultipleJointsViNone);
     }
     CPPUNIT_TEST_SUITE_END();
-    
+
  public:
     void setUp(void) {
     }
-    
+
     void tearDown(void) {
     }
-    
+
     void PositiveViZero(void);
     void PositiveViZeroPlateau(void);
     void PositiveViPositive(void);
@@ -82,6 +82,7 @@ class robLSPBTest : public CppUnit::TestFixture
     void NegativeViPositiveOvershotPlateau(void);
 
     void MultipleJoints(void);
+    void MultipleJointsViNone(void);
 
  protected:
 

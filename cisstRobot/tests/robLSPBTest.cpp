@@ -15,7 +15,10 @@ http://www.cisst.org/cisst/license.txt.
 */
 
 
+//#include "robLSPBTest.h"
+//#include <cisstRobot/robLSPBTest.h>
 #include "robLSPBTest.h"
+#include <cisstRobot/robLSPB.h>
 
 void robLSPBTest::SetDimension(const size_t dim)
 {
@@ -28,6 +31,7 @@ void robLSPBTest::SetDimension(const size_t dim)
     mVelocity.SetSize(mDimension);
     mAcceleration.SetSize(mDimension);
     mInitialVelocity.SetSize(mDimension);
+    mInitialVelocity.Zeros();
 }
 
 void robLSPBTest::Log(const robLSPB & trajectory,
@@ -119,7 +123,6 @@ void robLSPBTest::TestContinuity(const robLSPB & trajectory)
     maxVelocity.AbsOf(mInitialVelocity);
     maxVelocity.ElementwiseMax(mMaxVelocity);
 
-    // std::cerr << "max velocities " << maxVelocity << std::endl;
     vctDoubleVec deltaPosition(mDimension);
     vctDoubleVec avgVelocity(mDimension);
     vctDoubleVec deltaVelocity(mDimension);
@@ -152,7 +155,7 @@ void robLSPBTest::TestContinuity(const robLSPB & trajectory)
 
             // some tests can't be performed on first iteration because previous state is not well defined
             if (now > (startTime + timeStep)) {
-#if 0
+#if 1
                 std::cout << "previous " << previousVelocity[i] << std::endl
                           << "current  " << mVelocity[i] << std::endl
                           << "average  " << avgVelocity[i] << std::endl /* this is a C comment */
@@ -163,6 +166,7 @@ void robLSPBTest::TestContinuity(const robLSPB & trajectory)
                           << "deltaVel " << deltaVelocity[i]<<std::endl
                           << "accel    " << mAcceleration[i] << std::endl
                           << "index    " << i << std::endl;
+                std::cout<<"maxV: "<<maxVelocity[i]<<std::endl;
 #endif
                 CPPUNIT_ASSERT((deltaPosition[i] - avgVelocity[i]) <= 0.01);
                 CPPUNIT_ASSERT((deltaPosition[i] - avgVelocity[i]) >= -0.01);
@@ -583,5 +587,23 @@ void robLSPBTest::MultipleJoints(void)
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
     Log(trajectory, "MultipleJoints");
+    TestContinuity(trajectory);
+}
+
+void robLSPBTest::MultipleJointsViNone(void)
+{
+    SetDimension(7);
+    mStart.Assign(-0.0158007  ,  0.0101322  ,   0.178983 , -0.00293566  ,  0.0482327 ,  -0.0261802  ,   0.169714);
+    mFinish.Assign(-0.0158007,   0.0101322,   0.128983,  -0.00293566,    0.0482327,   -0.0261802,     0.169714);
+    mMaxVelocity.Assign(1.57080,      1.57080,     0.200000,      1.57080,      1.57080,      1.57080,      1.57080);
+    mMaxAcceleration.Assign(1.57080,      1.57080,     0.200000,      1.57080,      1.57080,      1.57080,      1.57080);
+
+    const double startTime = 2.0;
+    robLSPB trajectory;
+    trajectory.Set(mStart, mFinish,
+                   mMaxVelocity, mMaxAcceleration,
+                   startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
+
+    Log(trajectory, "MultipleJointsViNone");
     TestContinuity(trajectory);
 }
