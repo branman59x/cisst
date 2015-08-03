@@ -25,7 +25,7 @@ http://www.cisst.org/cisst/license.txt.
 
 int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 {
-    const size_t dimension = 6;
+    const size_t dimension = 2;
     vctDoubleVec
         start,
         finish,
@@ -46,11 +46,11 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 
     // set parameters
 
-    start.Assign(          0.0, 2.0, 3.0, 0.0, 2.0, 3.0);
-    finish.Assign(        10.0, 12.0, 5.0, 10.0, 12.0, 15.0);
-    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
-    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
-    initialVelocity.Assign(0.0, 1.0, 4.0, 5.0, -1.0, -6.0);
+//    start.Assign(          0.0, 2.0, 3.0, 0.0, 2.0, 3.0);
+//    finish.Assign(        10.0, 12.0, 5.0, 10.0, 12.0, 15.0);
+//    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
+//    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
+//    initialVelocity.Assign(0.0, 1.0, 4.0, 5.0, -1.0, -6.0);
 
 //    start[0] = 10;
 //    finish[0] = 10;
@@ -58,11 +58,11 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 //    maxAcceleration[0] = 2;
 //    initialVelocity[0] = 0;
 
-//    start.Assign(2.0, 0.0);
-//    finish.Assign(10.0, 10.0);
-//    maxVelocity.Assign(2.0, 4.0);
-//    maxAcceleration.Assign(2.0, 1.0);
-//    initialVelocity.Assign(1.0, 5.0);
+    start.Assign(2.0, 0.0);
+    finish.Assign(10.0, 10.0);
+    maxVelocity.Assign(200.0, 4.0);
+    maxAcceleration.Assign(2.0, 1.0);
+    initialVelocity.Assign(1.0, 5.0);
 
 //    start.Assign(0.00000, 0.486378, 0.0820529, 0.00000, 4.55546e-07, 0.00000, 0.00000);
 //    finish.Assign(0.00000, 0.261799, 0.0462000, 0.00000, 4.55546e-07, 0.00000, 0.00000);
