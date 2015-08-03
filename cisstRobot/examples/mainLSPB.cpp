@@ -25,7 +25,7 @@ http://www.cisst.org/cisst/license.txt.
 
 int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 {
-    const size_t dimension = 7;
+    const size_t dimension = 6;
     vctDoubleVec
         start,
         finish,
@@ -46,11 +46,11 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 
     // set parameters
 
-//    start.Assign(          0.0, 2.0, 3.0, 0.0, 12.0, 3.0);
-//    finish.Assign(        10.0, 12.0, 3.0, 10.0, 12.0, 15.0);
-//    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
-//    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
-//    initialVelocity.Assign(0.0, 1.0, 0.0, 5.0, 0.0, -6.0);
+    start.Assign(          0.0, 2.0, 3.0, 0.0, 2.0, 3.0);
+    finish.Assign(        10.0, 12.0, 5.0, 10.0, 12.0, 15.0);
+    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
+    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
+    initialVelocity.Assign(0.0, 1.0, 4.0, 5.0, -1.0, -6.0);
 
 //    start[0] = 10;
 //    finish[0] = 10;
@@ -58,28 +58,29 @@ int main(int CMN_UNUSED(argc), char ** CMN_UNUSED(argv))
 //    maxAcceleration[0] = 2;
 //    initialVelocity[0] = 0;
 
-//    start.Assign(         10.0, 12.0, 5.0, 0.0, 12.0, 15.0);
-//    finish.Assign(        10.0, 12.0, 5.0, 5.0, 12.0, 15.0);
-//    maxVelocity.Assign(    4.0, 2.0, 5.0, 4.0, 2.0, 5.0);
-//    maxAcceleration.Assign(1.0, 1.0, 2.0, 1.0, 1.0, 2.0);
+//    start.Assign(2.0, 0.0);
+//    finish.Assign(10.0, 10.0);
+//    maxVelocity.Assign(2.0, 4.0);
+//    maxAcceleration.Assign(2.0, 1.0);
+//    initialVelocity.Assign(1.0, 5.0);
 
-    start.Assign( -8.44185e-11,  6.56747e-08,     0.120000 ,     0.00000 ,     0.00000,      0.00000,  6.57879e-08);
-    finish.Assign(-8.44185e-11,  6.56747e-08,    0.0700000,      0.00000,      0.00000,      0.00000,  6.57879e-08);
-    maxVelocity.Assign( 1.57080,      1.57080,     0.200000,      1.57080,      1.57080,      1.57080,      1.57080);
-    maxAcceleration.Assign(1.57080,      1.57080,     0.200000,      1.57080,      1.57080,      1.57080,      1.57080);
-    //initialVelocity.Assign(0.00000,      0.00000,      0.00000,      0.00000,      0.00000,      0.00000,      0.00000);
+//    start.Assign(0.00000, 0.486378, 0.0820529, 0.00000, 4.55546e-07, 0.00000, 0.00000);
+//    finish.Assign(0.00000, 0.261799, 0.0462000, 0.00000, 4.55546e-07, 0.00000, 0.00000);
+//    maxVelocity.Assign(1.57080, 1.57080, 0.200000, 1.57080, 1.57080, 1.57080, 1.57080);
+//    maxAcceleration.Assign(1.57080, 1.57080, 0.200000, 1.57080, 1.57080, 1.57080, 1.57080);
+//    initialVelocity.Assign(0.00230181, 0.486223, 0.114260, -0.000875546, -0.00111248, 0.000160613, -0.00222943);
 
-    const double startTime = 103.963;
+    const double startTime = 2.0;
 
     robLSPB trajectory;
     trajectory.Set(start, finish,
-                   maxVelocity, maxAcceleration,
+                   maxVelocity, maxAcceleration, initialVelocity,
                    startTime, robLSPB::LSPB_DURATION); // default is LSPB_NONE
 
     const double duration = trajectory.Duration();
     const double extraPlotTime = 2.0;
     const double plotTime = extraPlotTime + duration + extraPlotTime;
-    const size_t nbSteps = 2000;
+    const size_t nbSteps = 20000;
     const double step = plotTime / nbSteps;
 
     std::cout << "duration: " << duration << std::endl;
