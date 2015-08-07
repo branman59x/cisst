@@ -83,7 +83,6 @@ class CISST_EXPORT robLSPB {
         mDecelerationDistance,
         mOvershotDistance, // displacement over an overshoot
         mOvershotStart, // starting point after overshot
-        mFirstPhase, // finds the first phase for fixing scaling
         mDirection;
 
  public:

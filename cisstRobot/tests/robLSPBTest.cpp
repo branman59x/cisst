@@ -129,7 +129,6 @@ void robLSPBTest::TestContinuity(const robLSPB & trajectory)
 
     for (size_t j = 0; j < nbSteps; j++) {
         double now = startTime + j * timeStep;
-
         trajectory.Evaluate(now , mPosition, mVelocity, mAcceleration);
 
 
@@ -155,10 +154,10 @@ void robLSPBTest::TestContinuity(const robLSPB & trajectory)
 
             // some tests can't be performed on first iteration because previous state is not well defined
             if (now > (startTime + timeStep)) {
-#if 1
+#if 0
                 std::cout << "previous " << previousVelocity[i] << std::endl
                           << "current  " << mVelocity[i] << std::endl
-                          << "average  " << avgVelocity[i] << std::endl /* this is a C comment */
+                          << "average  " << avgVelocity[i] << std::endl
                           << "prevPos  " << previousPosition[i] << std::endl
                           << "currPos  " << mPosition[i] << std::endl
                           << "deltaPos " << deltaPosition[i] << std::endl
